@@ -30,6 +30,10 @@ using std::bitset;
  *     1101 | SETC   -       F = 0                       1     0 1
  *     1110 | (LETC) -       F = 0                       Cin   0 1
  *     1111 | INVC   -       F = 0                       ~Cin  0 1
+ *
+ *      C = carry (overflow)
+ *      N = output is negative (last bit set -> two's complement)
+ *      Z = output is 0
  */
 class Alu {
     public:
