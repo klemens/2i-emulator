@@ -1,5 +1,7 @@
 #include "Alu.h"
 
+using std::bitset;
+
 bitset<8> Minirechner2i::Alu::calculate(bitset<4> function, bitset<8> a,
                                         bitset<8> b, bitset<3> & flags) {
     bitset<8> f; //the result, initialized with 00000000
@@ -24,22 +26,22 @@ bitset<8> Minirechner2i::Alu::calculate(bitset<4> function, bitset<8> a,
             break;
         case 4: // F = A + B
             tmp = aLong + bLong;
-            f = bitset<8>(sum);
+            f = bitset<8>(tmp);
             flags[0] = tmp > 255; // get the overflow bit
             break;
         case 5: // F = A + B + 1, Ca inverted
             tmp = aLong + bLong + 1;
-            f = bitset<8>(sum);
+            f = bitset<8>(tmp);
             flags[0] = ~(tmp > 255); // get the overflow bit
             break;
         case 6: // F = A + B + Cin
             tmp = aLong + bLong + (flags[0] ? 1 : 0);
-            f = bitset<8>(sum);
+            f = bitset<8>(tmp);
             flags[0] = tmp > 255; // get the overflow bit
             break;
         case 7: // F = A + B + ~Cin, Ca inverted
             tmp = aLong + bLong + (flags[0] ? 0 : 1);
-            f = bitset<8>(sum);
+            f = bitset<8>(tmp);
             flags[0] = ~(tmp > 255); // get the overflow bit
             break;
         case 8: // F(n) = A(n+1), F(7) = 0
