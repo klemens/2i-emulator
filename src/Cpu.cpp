@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+using std::bitset;
+
 void Minirechner2i::Cpu::runInstruction() {
     //determine input A of ALU
     //determine input B of ALU
