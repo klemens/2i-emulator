@@ -145,7 +145,7 @@ int main(int argc, char** args) {
 
     AluTest test;
 
-    test.addTest(&AluTest::testLogic, "summation");
+    test.addTest(&AluTest::testLogic, "nor and let");
     test.addTest(&AluTest::testSummation, "summation");
     test.addTest(&AluTest::testShift, "right shift");
     test.addTest(&AluTest::testFlags, "flags");
