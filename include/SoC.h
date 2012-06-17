@@ -43,6 +43,28 @@ class SoC {
             return ret;
         }
 
+        /**
+         * Calculates the next address from given address and flags according
+         * to the following table:
+         *
+         *     MAC_N0____4___3___2___1___0_
+         *     00  x  |  N4  N3  N2  N1  N0
+         *     01  0  |  N4  N3  N2  N1  1
+         *     01  1  |  N4  N3  N2  N1  CF
+         *     10  0  |  N4  N3  N2  N1  CO
+         *     10  1  |  N4  N3  N2  N1  ZO
+         *     11  0  |  N4  N3  N2  N1  NO
+         *     11  1  |  N4  N3  N2  N1  0
+         *
+         *      N0 - N4  = Next address (next)
+         *      CF       = Carry flag from carryRegister[0]
+         *      CO       = Carry flag from flags[0]
+         *      NO       = Negative flag from flags[1]
+         *      ZO       = Zero flag from flags[2]
+         *
+         **/
+        bitset<5> calculateNextAddress(bitset<5> next, bitset<2> mac,
+                                       bitset<3> falgs, bitset<3> flagRegister);
 
         const Alu & alu;
 

@@ -15,6 +15,40 @@ void Minirechner2i::SoC::runInstruction() {
     //save output flags if requested
 
     //calculate next address
+
+bitset<5> Minirechner2i::SoC::calculateNextAddress(bitset<5> next, bitset<2> mac,
+                                                   bitset<3> falgs, bitset<3> flagRegister) {
+    bitset<5> ret = next;
+
+    // func = MAC<<1 | N0
+    bitset<3> func; func[2] = mac[1]; func[1] = mac[0]; func[0] = next[0];
+
+    switch(func.to_ulong()) {
+        case 0: // 000
+        case 1: // 001
+            ret[0] = next[0];
+            break;
+        case 2: // 010
+            ret[0] = 1;
+            break;
+        case 3: // 011
+            ret[0] = flagRegister[0];
+            break;
+        case 4: // 100
+            ret[0] = falgs[0];
+            break;
+        case 5: // 101
+            ret[0] = falgs[2];
+            break;
+        case 6: // 110
+            ret[0] = falgs[1];
+            break;
+        case 7: // 111
+            ret[0] = 0;
+            break;
+    }
+
+    return ret;
 }
 
 bitset<25> Minirechner2i::SoC::getInstruction(size_t position) {
