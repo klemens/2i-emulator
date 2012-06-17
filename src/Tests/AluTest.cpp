@@ -10,6 +10,34 @@ using std::bitset;
 
 class Alu : public MiniUnit::TestCase <Alu> {
     public:
+        void testLogic() {
+            bitset<4> leta("0000"), letb("0001"), nor("0010"), let0("0011");
+            bitset<8> a("11010100"), b("00101101"), c;
+            bitset<3> flags;
+
+            // Cin = 0, a = 11010100, b = 00101101  -> f = 11010100, Ca = 0
+            MiniUnitAssertEqual(alu->calculate(leta, a, b, flags), a);
+            // Ca must be 0
+            MiniUnitAssertEqual(flags[0], 0);
+            // Cin = 0, a = 11010100, b = 00101101  -> f = 00101101, Ca = 0
+            MiniUnitAssertEqual(alu->calculate(letb, a, b, flags), b);
+            // Ca must be 0
+            MiniUnitAssertEqual(flags[0], 0);
+            // Cin = 0, a = 11010100, b = 00101101  -> f = 0, Ca = 0
+            MiniUnitAssertEqual(alu->calculate(let0, a, b, flags), c);
+            // Ca must be 0
+            MiniUnitAssertEqual(flags[0], 0);
+
+            // Cin = 0, a = 11010100, b = 00101101  -> f = 00000010, Ca = 0
+            MiniUnitAssertEqual(alu->calculate(nor, a, b, flags), bitset<8>("00000010"));
+            // Ca must be 0
+            MiniUnitAssertEqual(flags[0], 0);
+            // Cin = 0, a = b = 11010100  -> ~a = 00101011, Ca = 0
+            MiniUnitAssertEqual(alu->calculate(nor, a, a, flags), bitset<8>("00101011"));
+            // Ca must be 0
+            MiniUnitAssertEqual(flags[0], 0);
+        }
+
         void testSummation() {
             bitset<4> add("0100"), addo("0101"), addc("0110"), addci("0111");
             unsigned long a = 47, b = 19, c = 236;
@@ -117,6 +145,7 @@ int main(int argc, char** args) {
 
     AluTest test;
 
+    test.addTest(&AluTest::testLogic, "summation");
     test.addTest(&AluTest::testSummation, "summation");
     test.addTest(&AluTest::testShift, "right shift");
     test.addTest(&AluTest::testFlags, "flags");
