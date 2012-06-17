@@ -21,7 +21,7 @@ bitset<8> Minirechner2i::Alu::calculate(bitset<4> function, bitset<8> a,
             flags[0] = false;
             break;
         case 3: // F = 0
-            f = ~(a | b);
+            f = 0;
             flags[0] = false;
             break;
         case 4: // F = A + B
