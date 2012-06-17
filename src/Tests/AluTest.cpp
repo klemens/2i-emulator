@@ -60,6 +60,42 @@ class Alu : public MiniUnit::TestCase <Alu> {
             MiniUnitAssertEqual(flags[0], 1);
         }
 
+        void testFlags() {
+            bitset<4> leta("0000"), clc("1100"), setc("1101"), letc("1110"), invc("1111");
+            bitset<8> a("11010110"), b("00101101"), c;
+            bitset<3> flags;
+
+            // Cin = 0  -> set carry, Ca = 1
+            alu->calculate(setc, c, c, flags);
+            // Ca must be 1
+            MiniUnitAssertEqual(flags[0], 1);
+            // Cin = 1  -> let carry, Ca = 1
+            alu->calculate(letc, c, c, flags);
+            // Ca must be 1
+            MiniUnitAssertEqual(flags[0], 1);
+            // Cin = 1  -> clear carry, Ca = 0
+            alu->calculate(clc, c, c, flags);
+            // Ca must be 0
+            MiniUnitAssertEqual(flags[0], 0);
+            // Cin = 0  -> invert carry, Ca = 1
+            alu->calculate(invc, c, c, flags);
+            // Ca must be 1
+            MiniUnitAssertEqual(flags[0], 1);
+
+            // c = 0 -> N = 0, Z = 1
+            alu->calculate(leta, c, c, flags);
+            MiniUnitAssertEqual(flags[1], 0);
+            MiniUnitAssertEqual(flags[2], 1);
+            // b = 00101101 (45) -> N = 0, Z = 0
+            alu->calculate(leta, b, c, flags);
+            MiniUnitAssertEqual(flags[1], 0);
+            MiniUnitAssertEqual(flags[2], 0);
+            // a = 11010110 (-42) -> N = 1, Z = 0
+            alu->calculate(leta, a, c, flags);
+            MiniUnitAssertEqual(flags[1], 1);
+            MiniUnitAssertEqual(flags[2], 0);
+        }
+
         void initialize() {
             alu = new Minirechner2i::Alu;
         }
@@ -83,6 +119,8 @@ int main(int argc, char** args) {
 
     test.addTest(&AluTest::testSummation, "summation");
     test.addTest(&AluTest::testShift, "right shift");
+    test.addTest(&AluTest::testFlags, "flags");
+
     std::cout << test.run();
 
     return 0;
