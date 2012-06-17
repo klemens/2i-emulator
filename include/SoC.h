@@ -1,5 +1,5 @@
-#ifndef _MINIRECHNER2I_CPU_H_
-#define _MINIRECHNER2I_CPU_H_
+#ifndef _MINIRECHNER2I_SOC_H_
+#define _MINIRECHNER2I_SOC_H_
 
 #include <cstddef>
 #include <bitset>
@@ -9,7 +9,7 @@ namespace Minirechner2i {
 using std::size_t;
 using std::bitset;
 
-class Cpu {
+class SoC {
     public:
         void runInstruction();
         bitset<5> getNextInstructionNumber() { return nextInstruction; }
@@ -51,4 +51,4 @@ class Cpu {
 
 } // namespace Minirechner2i
 
-#endif // _MINIRECHNER2I_CPU_H_
+#endif // _MINIRECHNER2I_SOC_H_
