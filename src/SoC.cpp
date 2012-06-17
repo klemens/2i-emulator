@@ -5,16 +5,69 @@
 using std::bitset;
 
 void Minirechner2i::SoC::runInstruction() {
-    //determine input A of ALU
-    //determine input B of ALU
+    // Get current instruction
+    bitset<25> cur = instructionRam[nextInstruction];
+    bitset<8> a, b, f;
 
-    //calculate output of alu
+    // Determine input a of ALU
+    bitset<8> aRegisterValue = registers[substr<3>(cur, 13).to_ulong()];
+    if(cur[6]) { // Read from RAM (with address from register)
+        if(!cur[16])
+            throw logic_error("Cannot read from disabled bus!");
+        else if(cur[17])
+            throw logic_error("Cannot read from write-only bus!");
 
-    //save back to registers and/or ram
+        if(aRegisterValue.to_ulong() >= 0xFC) // Input register
+            a = inputRegister[aRegisterValue.to_ulong() - 0xFC];
+        else // RAM
+            a = ram[aRegisterValue.to_ulong()];
+    } else { // Read from register
+        a = aRegisterValue;
+    }
 
-    //save output flags if requested
+    // Determine input b of ALU
+    if(cur[5]) { // Read as constant
+        bTmp = substr<4>(cur, 9);
+        if(bTmp[3]) { // If bit 3 is set, set bits 4 - 7 to 1 (1111 -> FF)
+            b.set();
+        }
+        b[2] = bTmp[2]; b[1] = bTmp[1]; b[0] = bTmp[0];
+    } else { // Read from register
+        b = registers[substr<3>(cur, 9).to_ulong()];
+    }
 
-    //calculate next address
+    // Calculate output of alu
+    bitset<3> flagsNew = flags;
+    f = alu.calculate(substr<4>(cur, 1), a, b, flagsNew);
+
+    // Save back to registers
+    if(cur[7]) {
+        if(cur[8]) // Write to b
+            registers[substr<3>(cur, 9).to_ulong()] = f;
+        else // Write to a
+            registers[substr<3>(cur, 13).to_ulong()] = f;
+    }
+
+    //Save back to RAM
+    if(cur[16] && cur[17]) { // If bus is enabled and write-only
+        size_t address = registers[substr<3>(cur, 13).to_ulong()].to_ulong();
+
+        if(address == 0xFC || address == 0xFD)
+            throw logic_error("Cannot write into input register!");
+
+        if(address >= 0xFE) // Write into output register
+            outputRegister[address - 0xFE] = f;
+        else // Write into RAM
+            ram[address] = f;
+    }
+
+    // Save output flags if desired
+    if(cur[0])
+        flags = flagsNew;
+
+    // Calculate next address
+    nextInstruction = calculateNextAddress(substr<5>(cur, 18), substr<2>(cur, 23), flagsNew, flags);
+}
 
 bitset<5> Minirechner2i::SoC::calculateNextAddress(bitset<5> next, bitset<2> mac,
                                                    bitset<3> falgs, bitset<3> flagRegister) {
