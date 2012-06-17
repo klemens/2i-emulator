@@ -59,6 +59,8 @@ class SoC {
         bitset<8> inputRegister[inputRegisterCount];
         bitset<8> outputRegister[outputRegisterCount];
 
+        bitset<3> flags;
+
         bitset<5> nextInstruction;
 };
 
