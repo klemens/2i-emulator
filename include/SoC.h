@@ -35,6 +35,14 @@ class SoC {
         size_t getOutputRegisterCount() { return outputRegisterCount; }
 
     private:
+        template<size_t lengthNew, size_t length>
+        bitset<lengthNew> substr(bitset<length> b, size_t start) {
+            bitset<lengthNew> ret;
+            for(size_t i = 0; i < lengthNew && i + start < length; ++i)
+                ret[i] = b[i + start];
+            return ret;
+        }
+
 
         const Alu & alu;
 
