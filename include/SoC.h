@@ -11,6 +11,8 @@ using std::bitset;
 
 class SoC {
     public:
+        SoC(const Alu & alu) : alu(alu) {}
+
         void runInstruction();
         bitset<5> getNextInstructionNumber() { return nextInstruction; }
 
@@ -33,6 +35,9 @@ class SoC {
         size_t getOutputRegisterCount() { return outputRegisterCount; }
 
     private:
+
+        const Alu & alu;
+
         const static size_t ramSize = 252; // 2^8 - 4 Input register
         const static size_t instructionRamSize = 32; // 2^5 possible instructions
         const static size_t registerCount = 8; // 8 internal registers
