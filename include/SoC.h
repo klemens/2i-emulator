@@ -15,6 +15,12 @@ class SoC {
     public:
         SoC(const Alu & alu) : alu(alu) {}
 
+        enum Flags {
+            CARRY_FLAG = 0,
+            NEGATIVE_FLAG = 1,
+            ZERO_FLAG = 2
+        };
+
         void runInstruction();
         bitset<5> getNextInstructionNumber() { return nextInstruction; }
 
@@ -28,6 +34,7 @@ class SoC {
         void setInputRegister(size_t position, bitset<8> value);
         bitset<8> getOutputRegister(size_t position);
 
+        bool getFlag(Flags f) { return flags[f]; }
 
         size_t getInstructionRamSize() { return instructionRamSize; }
         size_t getRamSize() { return ramSize; }
