@@ -37,7 +37,7 @@ class ConsoleRunner {
                 if(cmd == "i") // Change input register
                     setInputRegister(in, out);
                 else if(cmd == "r") // RamInspector
-                    ; //todo
+                    out << "Not implemented yet" << endl; //todo
                 else if(cmd == "q") // quit
                     break;
                 else
