@@ -35,8 +35,8 @@ class TestCase {
 
             r << "Running " << testFunctions.size() << " unit tests.\n";
 
-            typename std::vector<testfunction_t>::const_iterator itF = testFunctions.begin();
-            std::vector<std::string>::const_iterator itN = testNames.begin();
+            auto itF = testFunctions.begin();
+            auto itN = testNames.begin();
             for(;itF != testFunctions.end(); ++itF, ++itN) {
                 initialize();
 
