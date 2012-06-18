@@ -3,7 +3,7 @@
 using std::bitset;
 
 bitset<8> Minirechner2i::Alu::calculate(bitset<4> function, bitset<8> a,
-                                        bitset<8> b, bitset<3> & flags) {
+                                        bitset<8> b, bitset<3> & flags) const {
     bitset<8> f; //the result, initialized with 00000000
     unsigned long aLong = a.to_ulong(), bLong = b.to_ulong(), tmp;
 

@@ -45,7 +45,7 @@ class Alu {
          * flags[1] = result is negative (last bit 1)
          * falgs[2] = result is null (all bits 0)
          */
-        bitset<8> calculate(bitset<4> function, bitset<8> a, bitset<8> b, bitset<3> & flags);
+        bitset<8> calculate(bitset<4> function, bitset<8> a, bitset<8> b, bitset<3> & flags) const;
 };
 
 }
