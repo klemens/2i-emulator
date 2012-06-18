@@ -161,10 +161,3 @@ bitset<8> Minirechner2i::SoC::getOutputRegister(size_t position) {
     else
         throw std::out_of_range("Minirechner2i::SoC::getOutputRegister");
 }
-
-void Minirechner2i::SoC::setOutputRegister(size_t position, bitset<8> value) {
-    if(position < outputRegisterCount)
-        outputRegister[position] = value;
-    else
-        throw std::out_of_range("Minirechner2i::SoC::setOutputRegister");
-}

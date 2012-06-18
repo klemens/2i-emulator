@@ -27,7 +27,6 @@ class SoC {
         bitset<8> getInputRegister(size_t position);
         void setInputRegister(size_t position, bitset<8> value);
         bitset<8> getOutputRegister(size_t position);
-        void setOutputRegister(size_t position, bitset<8> value);
 
 
         size_t getInstructionRamSize() { return instructionRamSize; }
