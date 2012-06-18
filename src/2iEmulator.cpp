@@ -129,7 +129,7 @@ class ConsoleRunner {
             for(int i = 0; i < 2; ++i) {
                 ostringstream out;
                 out << std::uppercase << std::hex << (i + 254) << std::dec
-                    << " (" << i << "): " << soc.getInputRegister(i);
+                    << " (" << i << "): " << soc.getOutputRegister(i);
                 ioRegisters.push_back(out.str());
             }
 
