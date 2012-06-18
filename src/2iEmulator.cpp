@@ -11,6 +11,7 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::ostringstream;
+using std::istringstream;
 
 class ConsoleRunner {
     public:
@@ -31,8 +32,9 @@ class ConsoleRunner {
 
                 string cmd;
                 getline(in, cmd);
+
                 if(cmd == "i") // Change input register
-                    ; //todo
+                    setInputRegister(in, out);
                 else if(cmd == "r") // RamInspector
                     ; //todo
                 else if(cmd == "q") // quit
@@ -68,6 +70,28 @@ class ConsoleRunner {
                     }
                 }
             }
+        }
+
+        void setInputRegister(std::istream & in, std::ostream & out) {
+            out << "Eingaberegister wählen (0-3): ";
+
+            size_t i;
+            do {
+                string line;
+                getline(in, line);
+                istringstream iStream(line);
+                iStream >> i;
+            } while(i >= 4);
+
+            out << std::hex << std::uppercase << (i + 252) << std::dec << " = ";
+
+            bitset<8> value;
+            string line;
+            getline(in, line);
+            istringstream iStream(line);
+            iStream >> value;
+
+            soc.setInputRegister(i, value);
         }
 
         void displayOverview(std::ostream & out) {
