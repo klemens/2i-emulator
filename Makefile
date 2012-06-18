@@ -1,7 +1,7 @@
 # compiler/linker settings
 CC               = g++
 override GFLAGS  +=
-override CFLAGS  += -c -Wall -std=c++11 -O2 -Iinclude $(GFLAGS)
+override CFLAGS  += -c -Wall -std=c++0x -O2 -Iinclude $(GFLAGS)
 override LFLAGS  += -static $(GFLAGS)
 
 # directories
