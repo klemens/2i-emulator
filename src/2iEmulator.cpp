@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <fstream>
 
 namespace Minirechner2i {
 
@@ -48,7 +49,7 @@ class ConsoleRunner {
 
     private:
         void readInstructions(std::istream & in, std::ostream & out) {
-            out << "Bitte der Reihe nach die Befehle eingeben:" << endl
+            out << "Bitte der Reihe nach die Befehle oder einen Dateinamen eingeben:" << endl
                 << "(\"q\" zum Überspringen der restlichen, führende Nullen weggelassen)"
                 << endl << endl;
 
@@ -57,6 +58,15 @@ class ConsoleRunner {
 
                 string line;
                 getline(in, line);
+
+                // Check it the user entered a filename
+                std::ifstream ifs(line, std::ifstream::in);
+                if(ifs.good()) {
+                    out << "Lese aus Datei \"" << line << "\":" << endl;
+                    ostringstream o;
+                    readInstructions(ifs, o);
+                    return;
+                }
 
                 if(line == "q") break;
                 else {
