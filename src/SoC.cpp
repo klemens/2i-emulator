@@ -3,10 +3,11 @@
 #include <stdexcept>
 
 using std::bitset;
+using std::logic_error;
 
 void Minirechner2i::SoC::runInstruction() {
     // Get current instruction
-    bitset<25> cur = instructionRam[nextInstruction];
+    bitset<25> cur = instructionRam[nextInstruction.to_ulong()];
     bitset<8> a, b, f;
 
     // Determine input a of ALU
@@ -27,7 +28,7 @@ void Minirechner2i::SoC::runInstruction() {
 
     // Determine input b of ALU
     if(cur[5]) { // Read as constant
-        bTmp = substr<4>(cur, 9);
+        bitset<4> bTmp = substr<4>(cur, 9);
         if(bTmp[3]) { // If bit 3 is set, set bits 4 - 7 to 1 (1111 -> FF)
             b.set();
         }
