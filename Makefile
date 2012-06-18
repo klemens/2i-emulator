@@ -39,3 +39,6 @@ $(OBJECTS)/AluTest.o: $(TESTS)/AluTest.cpp $(HEADERS)/Alu.h $(HEADERS)/MiniUnit.
 	$(CC) -o $@ $(CFLAGS) $(TESTS)/AluTest.cpp
 
 $(HEADERS)/SoC.h: $(HEADERS)/Alu.h
+
+clean:
+	rm -f obj/*.o $(EXEC)/2iEmulator.exe $(UNIT)/AluTest.exe
