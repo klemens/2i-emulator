@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <bitset>
 
+#include "Alu.h"
+
 namespace Minirechner2i {
 
 using std::size_t;
