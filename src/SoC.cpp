@@ -11,7 +11,7 @@ void Minirechner2i::SoC::runInstruction() {
     bitset<8> a, b, f;
 
     // Determine input a of ALU
-    bitset<8> aRegisterValue = registers[substr<3>(cur, 13).to_ulong()];
+    bitset<8> aRegisterValue = registers[SoC::substr<3>(cur, 13).to_ulong()];
     if(cur[6]) { // Read from RAM (with address from register)
         if(!cur[16])
             throw logic_error("Cannot read from disabled bus!");
@@ -28,30 +28,30 @@ void Minirechner2i::SoC::runInstruction() {
 
     // Determine input b of ALU
     if(cur[5]) { // Read as constant
-        bitset<4> bTmp = substr<4>(cur, 9);
+        bitset<4> bTmp = SoC::substr<4>(cur, 9);
         if(bTmp[3]) { // If bit 3 is set, set bits 4 - 7 to 1 (1111 -> FF)
             b.set();
         }
         b[2] = bTmp[2]; b[1] = bTmp[1]; b[0] = bTmp[0];
     } else { // Read from register
-        b = registers[substr<3>(cur, 9).to_ulong()];
+        b = registers[SoC::substr<3>(cur, 9).to_ulong()];
     }
 
     // Calculate output of alu
     bitset<3> flagsNew = flags;
-    f = alu.calculate(substr<4>(cur, 1), a, b, flagsNew);
+    f = alu.calculate(SoC::substr<4>(cur, 1), a, b, flagsNew);
 
     // Save back to registers
     if(cur[7]) {
         if(cur[8]) // Write to b
-            registers[substr<3>(cur, 9).to_ulong()] = f;
+            registers[SoC::substr<3>(cur, 9).to_ulong()] = f;
         else // Write to a
-            registers[substr<3>(cur, 13).to_ulong()] = f;
+            registers[SoC::substr<3>(cur, 13).to_ulong()] = f;
     }
 
     //Save back to RAM
     if(cur[16] && cur[17]) { // If bus is enabled and write-only
-        size_t address = registers[substr<3>(cur, 13).to_ulong()].to_ulong();
+        size_t address = registers[SoC::substr<3>(cur, 13).to_ulong()].to_ulong();
 
         if(address == 0xFC || address == 0xFD)
             throw logic_error("Cannot write into input register!");
@@ -67,7 +67,7 @@ void Minirechner2i::SoC::runInstruction() {
         flags = flagsNew;
 
     // Calculate next address
-    nextInstruction = calculateNextAddress(substr<5>(cur, 18), substr<2>(cur, 23), flagsNew, flags);
+    nextInstruction = calculateNextAddress(SoC::substr<5>(cur, 18), SoC::substr<2>(cur, 23), flagsNew, flags);
 }
 
 bitset<5> Minirechner2i::SoC::calculateNextAddress(bitset<5> next, bitset<2> mac,

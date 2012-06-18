@@ -36,15 +36,15 @@ class SoC {
         size_t getInputRegisterCount() { return inputRegisterCount; }
         size_t getOutputRegisterCount() { return outputRegisterCount; }
 
-    private:
         template<size_t lengthNew, size_t length>
-        bitset<lengthNew> substr(bitset<length> b, size_t start) {
+        static bitset<lengthNew> substr(bitset<length> b, size_t start) {
             bitset<lengthNew> ret;
             for(size_t i = 0; i < lengthNew && i + start < length; ++i)
                 ret[i] = b[i + start];
             return ret;
         }
 
+    private:
         /**
          * Calculates the next address from given address and flags according
          * to the following table:
