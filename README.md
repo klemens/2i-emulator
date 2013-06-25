@@ -17,15 +17,15 @@ which contains one instustion per line in ascii. (see examples)
 
 ## Documentation ##
 
-In doc you'll find a german document describing the micro computer and its
+In doc you'll find a german documentation describing the micro computer and its
 instructions. The header files also include some basic information.
 
 ## Examples ##
 
 doc/examples contains two example programs: 
 
-1. __add2__:Reads two numbers from FC and FD and writes (FC + FD) * 2 into FF.
-2. __mul.txt__: Reads two numbers from FC and FD and writes their product into FE.
+1. __add2__: Reads two numbers from FC and FD and writes (FC + FD) * 2 into FF.
+2. __mul.txt__: Reads two numbers from FC and FD and writes FC * DF into FE.
 
 ## Licence ##
 
