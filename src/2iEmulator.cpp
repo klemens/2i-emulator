@@ -22,7 +22,7 @@ class ConsoleRunner {
             std::istream & in = std::cin;
             std::ostream & out = std::cout;
 
-            out << "2iEmulator - Emulator für den Minirechner2i" << endl << endl;
+            out << "2iEmulator - Emulator fuer den Minirechner2i" << endl << endl;
 
             readInstructions(in, out);
 
@@ -50,7 +50,8 @@ class ConsoleRunner {
     private:
         void readInstructions(std::istream & in, std::ostream & out) {
             out << "Bitte der Reihe nach die Befehle oder einen Dateinamen eingeben:" << endl
-                << "(\"q\" zum Überspringen der restlichen, führende Nullen weggelassen)"
+                << "(\"q\" zum Ueberspringen der restlichen, fuehrende Nullen weglassen," << endl
+                << "es kann auch eine Datei angegeben werden, siehe Beispiele)"
                 << endl << endl;
 
             for(size_t i = 0; i < 32; ++i) {
@@ -83,7 +84,7 @@ class ConsoleRunner {
         }
 
         void setInputRegister(std::istream & in, std::ostream & out) {
-            out << "Eingaberegister wählen (0-3): ";
+            out << "Eingaberegister waehlen (0-3): ";
 
             size_t i;
             do {
@@ -146,7 +147,7 @@ class ConsoleRunner {
             rest.push_back("");
             {
                 ostringstream out;
-                out << "Nächster Befehl: " << soc.getNextInstructionNumber() << " ("
+                out << "Naechster Befehl: " << soc.getNextInstructionNumber() << " ("
                     << soc.getNextInstructionNumber().to_ulong() << "):";
                 rest.push_back(out.str());
             }
@@ -160,9 +161,9 @@ class ConsoleRunner {
                 rest.push_back(out.str());
             }
             rest.push_back("");
-            rest.push_back("[i]: Eingaberegister ändern");
+            rest.push_back("[i]: Eingaberegister aendern");
             rest.push_back("[r]: RamInspector   [q]: Beenden");
-            rest.push_back("[ENTER]: nächsten Befehl ausführen");
+            rest.push_back("[ENTER]: Befehl ausfuehren");
 
             vector<string> spacer; spacer.insert(spacer.begin(), 9, "     ");
             vector<string> full = appendByLine(appendByLine(appendByLine(
