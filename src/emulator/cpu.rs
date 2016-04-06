@@ -10,6 +10,15 @@ pub struct Instruction {
     instruction: u32,
 }
 
+/// Cpu of the 2i.
+///
+/// Represents the 8 bit cpu of the 2i with 8 registers that are 8 bit wide and
+/// the three status registers (carry, negative, zero).
+pub struct Cpu {
+    registers: [u8; 8],
+    flags: (bool, bool, bool),
+}
+
 impl Instruction {
     /// Create a new Instruction from a u32. Fails if more than 25 bits
     /// are used.
@@ -109,6 +118,118 @@ impl Instruction {
 
     fn extract_bit_pattern(&self, mask: u8, position: u8) -> u8 {
         return ((self.instruction & (mask as u32) << position) >> position) as u8;
+    }
+}
+
+impl Cpu {
+    /// Create a new cpu with all registers and flags set to zero.
+    pub fn new() -> Cpu {
+        Cpu {
+            registers: [0; 8],
+            flags: (false, false, false),
+        }
+    }
+
+    /// Execute the given instruction on the cpu using the given alu, bus,
+    /// input and output. Returns the address of the next instruction.
+    pub fn execute_instruction<A>(&mut self, inst: Instruction, alu: A, bus: &mut [u8; 252],
+        input: &[u8; 4], output: &mut [u8; 2]) -> Result<u8, &'static str>
+        where A: Fn(u8, u8, u8, bool) -> (u8, (bool, bool, bool)) {
+        let a;
+        let b;
+
+        // Determine alu input a (bus or register)
+        if inst.is_alu_input_a_bus() {
+            if ! inst.should_enable_bus() {
+                return Err("Cannot read from disabled bus");
+            } else if inst.should_enable_bus_write() {
+                return Err("Cannot read from bus while it is in write mode");
+            }
+
+            let address = inst.get_register_address_a();
+            if address >= 0xFC { // FC - FF are input registers
+                a = input[(address - 0xFC)]
+            } else {
+                a = bus[address];
+            }
+        } else {
+            a = self.registers[inst.get_register_address_a()];
+        }
+
+        // Determine alu input b (constant or register)
+        if inst.is_alu_input_b_const() {
+            let mut constant = inst.get_constant_input();
+            if constant & 0b1000 != 0 {
+                // Set bits 4-7 to one if bit 3 is set
+                constant |= 0b11110000;
+            }
+            b = constant;
+        } else {
+            b = self.registers[inst.get_register_address_b()];
+        }
+
+        // Calculate result using alu
+        let (result, flags) = alu(inst.get_alu_instruction(), a, b, self.flags.0);
+
+        // Write result to registers
+        if inst.should_write_register() {
+            if inst.should_write_register_b() {
+                self.registers[inst.get_register_address_b()] = result;
+            } else {
+                self.registers[inst.get_register_address_a()] = result;
+            }
+        }
+
+        // Write results to the bus
+        if inst.should_enable_bus() && inst.should_enable_bus_write() {
+            let address = self.registers[inst.get_register_address_a()] as usize;
+
+            if address == 0xFC && address == 0xFD {
+                return Err("Cannot write into input register");
+            }
+
+            if address >= 0xFE {
+                output[address - 0xFE] = result;
+            } else {
+                bus[address] = result;
+            }
+        }
+
+        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flags.0))
+    }
+
+    /// Calculate the next instruction address based on the current instruction
+    /// and the flags.
+    fn calculate_next_instruction_address(inst: Instruction,
+        flags: (bool, bool, bool), stored_carry: bool) -> u8 {
+        let next_address = inst.get_next_instruction_address();
+
+        match inst.get_address_control() << 1 | (next_address & 0b00001) {
+            0b000 | 0b001 => {
+                next_address
+            }
+            0b010 => {
+                next_address | 0b00001
+            }
+            0b011 => {
+                next_address | stored_carry as u8
+            }
+            0b100 => {
+                next_address | flags.0 as u8
+            }
+            0b101 => {
+                next_address | flags.2 as u8
+            }
+            0b110 => {
+                next_address | flags.1 as u8
+            }
+            0b111 => {
+                next_address & 0b11110
+            }
+            _ => {
+                panic!("Invlid address control")
+            }
+        }
     }
 }
 
