@@ -33,7 +33,7 @@
 ///
 /// Returns the result and the flags carry, negative and zero as tuple. Higher
 /// instructions than 1111 == 15 will result in a panic.
-pub fn calculate(instruction: u8, a: u8, b: u8, mut carry: bool) -> (u8, (bool, bool, bool)){
+pub fn calculate(instruction: u8, a: u8, b: u8, mut carry: bool) -> (u8, (bool, bool, bool)) {
     let f; // result
 
     match instruction {

@@ -7,7 +7,7 @@
 /// Represents a 25 bit wide instruction that the 2i uses. Provides some
 /// conveniance methods to extract all different parts.
 pub struct Instruction {
-    instruction: u32
+    instruction: u32,
 }
 
 impl Instruction {
