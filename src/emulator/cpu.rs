@@ -21,6 +21,19 @@ impl Instruction {
         }
     }
 
+    /// Creat a new Instruction from a binary string (consisting only of ones
+    /// and zeroes). Failes if more than 25 bits (characters) are used.
+    pub fn new_from_string(string: &str) -> Option<Instruction> {
+        if string.len() > 25 {
+            None
+        } else {
+            u32::from_str_radix(string, 2).ok()
+                .map(|instruction| Instruction { instruction: instruction })
+        }
+    }
+
+    /// Get the instruction as a 25 bit integer (the first 7 most significant
+    /// bits of the u32 are always zero)
     pub fn get_instruction(&self) -> u32 {
         self.instruction
     }
@@ -96,38 +109,66 @@ impl Instruction {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    mod instruction {
+        use super::super::*;
 
-    #[test]
-    fn instruction() {
-        // load constant FC into register 0
-        let i1 = Instruction::new(0b00_00001_00_000_1100_01_01_0001_0).unwrap();
-        assert_eq!(i1.should_store_flags(), false);
-        assert_eq!(i1.get_alu_instruction(), 0b0001);
-        assert_eq!(i1.is_alu_input_b_const(), true);
-        assert_eq!(i1.is_alu_input_a_bus(), false);
-        assert_eq!(i1.should_write_register(), true);
-        assert_eq!(i1.should_write_register_b(), false);
-        assert_eq!(i1.get_register_address_b(), 0b1100);
-        assert_eq!(i1.get_register_address_a(), 0b000);
-        assert_eq!(i1.should_enable_bus(), false);
-        assert_eq!(i1.should_enable_bus_write(), false);
-        assert_eq!(i1.get_next_instruction_address(), 0b00001);
-        assert_eq!(i1.get_address_control(), 0b00);
+        #[test]
+        #[should_panic]
+        fn from_long_integer() {
+            Instruction::new(0b1000000000000000000000000_0).unwrap();
+        }
 
-        // load from memory location FC (register 0) into register 2
-        let i1 = Instruction::new(0b00_00010_01_000_0010_11_10_0000_0).unwrap();
-        assert_eq!(i1.should_store_flags(), false);
-        assert_eq!(i1.get_alu_instruction(), 0b0000);
-        assert_eq!(i1.is_alu_input_b_const(), false);
-        assert_eq!(i1.is_alu_input_a_bus(), true);
-        assert_eq!(i1.should_write_register(), true);
-        assert_eq!(i1.should_write_register_b(), true);
-        assert_eq!(i1.get_register_address_b(), 0b0010);
-        assert_eq!(i1.get_register_address_a(), 0b000);
-        assert_eq!(i1.should_enable_bus(), true);
-        assert_eq!(i1.should_enable_bus_write(), false);
-        assert_eq!(i1.get_next_instruction_address(), 0b00010);
-        assert_eq!(i1.get_address_control(), 0b00);
+        #[test]
+        fn extract_fields () {
+            // load constant FC into register 0
+            let i1 = Instruction::new(0b00_00001_00_000_1100_01_01_0001_0).unwrap();
+            assert_eq!(i1.should_store_flags(), false);
+            assert_eq!(i1.get_alu_instruction(), 0b0001);
+            assert_eq!(i1.is_alu_input_b_const(), true);
+            assert_eq!(i1.is_alu_input_a_bus(), false);
+            assert_eq!(i1.should_write_register(), true);
+            assert_eq!(i1.should_write_register_b(), false);
+            assert_eq!(i1.get_register_address_b(), 0b1100);
+            assert_eq!(i1.get_register_address_a(), 0b000);
+            assert_eq!(i1.should_enable_bus(), false);
+            assert_eq!(i1.should_enable_bus_write(), false);
+            assert_eq!(i1.get_next_instruction_address(), 0b00001);
+            assert_eq!(i1.get_address_control(), 0b00);
+
+            // load from memory location FC (register 0) into register 2
+            let i1 = Instruction::new(0b00_00010_01_000_0010_11_10_0000_0).unwrap();
+            assert_eq!(i1.should_store_flags(), false);
+            assert_eq!(i1.get_alu_instruction(), 0b0000);
+            assert_eq!(i1.is_alu_input_b_const(), false);
+            assert_eq!(i1.is_alu_input_a_bus(), true);
+            assert_eq!(i1.should_write_register(), true);
+            assert_eq!(i1.should_write_register_b(), true);
+            assert_eq!(i1.get_register_address_b(), 0b0010);
+            assert_eq!(i1.get_register_address_a(), 0b000);
+            assert_eq!(i1.should_enable_bus(), true);
+            assert_eq!(i1.should_enable_bus_write(), false);
+            assert_eq!(i1.get_next_instruction_address(), 0b00010);
+            assert_eq!(i1.get_address_control(), 0b00);
+        }
+
+        #[test]
+        fn from_string() {
+            let i1a = Instruction::new(0b00_00001_00_000_1100_01_01_0001_0).unwrap();
+            let i2a = Instruction::new(0b00_00010_01_000_0010_11_10_0000_0).unwrap();
+            let i3a = Instruction::new(0b11_11111_11_111_1111_11_11_1111_1).unwrap();
+            let i1b = Instruction::new_from_string("0000001000001100010100010").unwrap();
+            let i2b = Instruction::new_from_string("0000010010000010111000000").unwrap();
+            let i3b = Instruction::new_from_string("1111111111111111111111111").unwrap();
+
+            assert_eq!(i1a.get_instruction(), i1b.get_instruction());
+            assert_eq!(i2a.get_instruction(), i2b.get_instruction());
+            assert_eq!(i3a.get_instruction(), i3b.get_instruction());
+        }
+
+        #[test]
+        #[should_panic]
+        fn from_long_string() {
+            Instruction::new_from_string("11111111111111111111111110").unwrap();
+        }
     }
 }
