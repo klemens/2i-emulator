@@ -195,6 +195,11 @@ impl Cpu {
             }
         }
 
+        // Store flags in the flag register
+        if inst.should_store_flags() {
+            self.flag_register = flags;
+        }
+
         // Calculate and return the next instruction address
         Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.0))
     }
