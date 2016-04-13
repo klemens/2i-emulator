@@ -16,7 +16,7 @@ pub struct Instruction {
 /// the three status registers (carry, negative, zero).
 pub struct Cpu {
     registers: [u8; 8],
-    flags: (bool, bool, bool),
+    flag_register: (bool, bool, bool),
 }
 
 impl Instruction {
@@ -126,7 +126,7 @@ impl Cpu {
     pub fn new() -> Cpu {
         Cpu {
             registers: [0; 8],
-            flags: (false, false, false),
+            flag_register: (false, false, false),
         }
     }
 
@@ -169,7 +169,7 @@ impl Cpu {
         }
 
         // Calculate result using alu
-        let (result, flags) = alu(inst.get_alu_instruction(), a, b, self.flags.0);
+        let (result, flags) = alu(inst.get_alu_instruction(), a, b, self.flag_register.0);
 
         // Write result to registers
         if inst.should_write_register() {
@@ -195,7 +195,8 @@ impl Cpu {
             }
         }
 
-        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flags.0))
+        // Calculate and return the next instruction address
+        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.0))
     }
 
     /// Calculate the next instruction address based on the current instruction
