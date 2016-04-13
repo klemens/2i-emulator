@@ -93,12 +93,12 @@ impl Instruction {
     }
 
     /// BUSEN
-    pub fn should_enable_bus(&self) -> bool {
+    pub fn is_bus_enabled(&self) -> bool {
         self.extract_bit(16)
     }
 
     /// BUSWR
-    pub fn should_enable_bus_write(&self) -> bool {
+    pub fn is_bus_writable(&self) -> bool {
         self.extract_bit(17)
     }
 
@@ -140,9 +140,9 @@ impl Cpu {
 
         // Determine alu input a (bus or register)
         if inst.is_alu_input_a_bus() {
-            if ! inst.should_enable_bus() {
+            if ! inst.is_bus_enabled() {
                 return Err("Cannot read from disabled bus");
-            } else if inst.should_enable_bus_write() {
+            } else if inst.is_bus_writable() {
                 return Err("Cannot read from bus while it is in write mode");
             }
 
@@ -181,7 +181,7 @@ impl Cpu {
         }
 
         // Write results to the bus
-        if inst.should_enable_bus() && inst.should_enable_bus_write() {
+        if inst.is_bus_enabled() && inst.is_bus_writable() {
             let address = self.registers[inst.get_register_address_a()] as usize;
 
             if address == 0xFC && address == 0xFD {
@@ -257,8 +257,8 @@ mod tests {
             assert_eq!(i1.get_constant_input(), 0b1100);
             assert_eq!(i1.get_register_address_b(), 0b100);
             assert_eq!(i1.get_register_address_a(), 0b000);
-            assert_eq!(i1.should_enable_bus(), false);
-            assert_eq!(i1.should_enable_bus_write(), false);
+            assert_eq!(i1.is_bus_enabled(), false);
+            assert_eq!(i1.is_bus_writable(), false);
             assert_eq!(i1.get_next_instruction_address(), 0b00001);
             assert_eq!(i1.get_address_control(), 0b00);
 
@@ -273,8 +273,8 @@ mod tests {
             assert_eq!(i1.get_constant_input(), 0b0010);
             assert_eq!(i1.get_register_address_b(), 0b010);
             assert_eq!(i1.get_register_address_a(), 0b000);
-            assert_eq!(i1.should_enable_bus(), true);
-            assert_eq!(i1.should_enable_bus_write(), false);
+            assert_eq!(i1.is_bus_enabled(), true);
+            assert_eq!(i1.is_bus_writable(), false);
             assert_eq!(i1.get_next_instruction_address(), 0b00010);
             assert_eq!(i1.get_address_control(), 0b00);
         }
