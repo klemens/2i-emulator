@@ -209,28 +209,29 @@ impl Cpu {
     fn calculate_next_instruction_address(inst: Instruction,
         flags: (bool, bool, bool), stored_carry: bool) -> u8 {
         let next_address = inst.get_next_instruction_address();
+        let next_address_base = next_address & 0b11110; // Mask off last bit
 
         match inst.get_address_control() << 1 | (next_address & 0b00001) {
             0b000 | 0b001 => {
                 next_address
             }
             0b010 => {
-                next_address | 0b00001
+                next_address_base | 0b00001
             }
             0b011 => {
-                next_address | stored_carry as u8
+                next_address_base | stored_carry as u8
             }
             0b100 => {
-                next_address | flags.0 as u8
+                next_address_base | flags.0 as u8
             }
             0b101 => {
-                next_address | flags.2 as u8
+                next_address_base | flags.2 as u8
             }
             0b110 => {
-                next_address | flags.1 as u8
+                next_address_base | flags.1 as u8
             }
             0b111 => {
-                next_address & 0b11110
+                next_address_base
             }
             _ => {
                 panic!("Invlid address control")
@@ -303,6 +304,52 @@ mod tests {
         #[should_panic]
         fn from_long_string() {
             Instruction::new_from_string("11111111111111111111111110").unwrap();
+        }
+    }
+
+    mod cpu {
+        use super::super::*;
+
+        #[test]
+        fn address_calculation() {
+            // Helper function to keep asserts short
+            let na = |inst: u32, flag_register, carry| {
+                let inst = Instruction::new(inst << 18).unwrap();
+                let result = Cpu::calculate_next_instruction_address(inst, flag_register, carry);
+                result
+            };
+
+            // No modification
+            assert_eq!(na(0b00_00000, (false, false, false), false), 0b00000);
+            assert_eq!(na(0b00_11100, (false, false, false), false), 0b11100);
+            assert_eq!(na(0b00_11111, (false, false, false), false), 0b11111);
+            assert_eq!(na(0b00_00000, ( true,  true,  true),  true), 0b00000);
+            assert_eq!(na(0b00_11100, ( true,  true,  true),  true), 0b11100);
+            assert_eq!(na(0b00_11111, ( true,  true,  true),  true), 0b11111);
+
+            // Set last bit to 1
+            assert_eq!(na(0b01_11110, (false, false, false), false), 0b11111);
+            assert_eq!(na(0b01_11110, ( true,  true,  true),  true), 0b11111);
+
+            // Set last bit to stored carry
+            assert_eq!(na(0b01_11111, (false, false, false), false), 0b11110);
+            assert_eq!(na(0b01_11111, (false, false, false),  true), 0b11111);
+
+            // Set last bit to carry out
+            assert_eq!(na(0b10_11110, (false, false, false), false), 0b11110);
+            assert_eq!(na(0b10_11110, ( true, false, false), false), 0b11111);
+
+            // Set last bit to zero out
+            assert_eq!(na(0b10_11111, (false, false, false), false), 0b11110);
+            assert_eq!(na(0b10_11111, (false, false,  true), false), 0b11111);
+
+            // Set last bit to negative out
+            assert_eq!(na(0b11_11110, (false, false, false), false), 0b11110);
+            assert_eq!(na(0b11_11110, (false,  true, false), false), 0b11111);
+
+            // Set last bit to 0
+            assert_eq!(na(0b11_11111, (false, false, false), false), 0b11110);
+            assert_eq!(na(0b11_11111, (false,  true, false), false), 0b11110);
         }
     }
 }
