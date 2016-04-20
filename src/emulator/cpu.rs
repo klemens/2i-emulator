@@ -254,7 +254,7 @@ mod tests {
 
         #[test]
         fn extract_fields () {
-            // load constant FC into register 0
+            // Load constant FC into register 0
             let i1 = Instruction::new(0b00_00001_00_000_1100_01_01_0001_0).unwrap();
             assert_eq!(i1.should_store_flags(), false);
             assert_eq!(i1.get_alu_instruction(), 0b0001);
@@ -270,7 +270,7 @@ mod tests {
             assert_eq!(i1.get_next_instruction_address(), 0b00001);
             assert_eq!(i1.get_address_control(), 0b00);
 
-            // load from memory location FC (register 0) into register 2
+            // Load from memory location FC (register 0) into register 2
             let i1 = Instruction::new(0b00_00010_01_000_0010_11_10_0000_0).unwrap();
             assert_eq!(i1.should_store_flags(), false);
             assert_eq!(i1.get_alu_instruction(), 0b0000);
