@@ -147,7 +147,7 @@ impl Cpu {
                 return Err("Cannot read from bus while it is in write mode");
             }
 
-            let address = inst.get_register_address_a();
+            let address = self.registers[inst.get_register_address_a()] as usize;
             if address >= 0xFC { // FC - FF are input registers
                 a = input[(address - 0xFC)]
             } else {
