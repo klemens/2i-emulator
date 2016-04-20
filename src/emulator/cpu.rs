@@ -310,6 +310,7 @@ mod tests {
 
     mod cpu {
         use super::super::*;
+        use ::emulator::alu::calculate;
 
         #[test]
         fn address_calculation() {
@@ -351,6 +352,54 @@ mod tests {
             // Set last bit to 0
             assert_eq!(na(0b11_11111, (false, false, false), false), 0b11110);
             assert_eq!(na(0b11_11111, (false,  true, false), false), 0b11110);
+        }
+
+        #[test]
+        fn multiplication() {
+            let program: Vec<_> = [
+                0b00_00001_00_000_1100_01_01_0001_0, // in:  R0 = FC
+                0b00_00010_01_000_0000_01_10_0000_0, //      R0 = (R0)
+                0b00_00011_00_001_1101_01_01_0001_0, //      R1 = FD
+                0b00_00100_01_001_0000_01_10_0000_0, //      R1 = (R1)
+                0b00_00101_00_010_0000_01_00_0011_0, //      R2 = 0
+                0b10_00111_00_000_0000_00_00_0000_0, // tst: TEST R0, ZO
+                0b00_01000_00_000_1111_01_01_0100_0, //        R0 = R0 + FF, JP add
+                0b00_01001_00_001_1110_01_01_0001_0, //        R1 = FF, JP out
+                0b00_00101_00_010_0001_01_00_0100_0, // add: R2 = R2 + R1, JP tst
+                0b00_00000_11_001_0010_00_00_0001_0, // out: (R1) = R2, JP in
+            ].iter().map(|&i| Instruction::new(i)).collect();
+
+            let mult = |a, b, steps| -> u8 {
+                let mut next_instruction_address = 0;
+                let mut bus = [0; 252];
+                let input = [a, b, 0, 0];
+                let mut output = [0; 2];
+                let mut cpu = Cpu::new();
+
+                for _ in 0..steps {
+                    let inst = program[next_instruction_address].unwrap();
+                    next_instruction_address = cpu.execute_instruction(inst,
+                        calculate, &mut bus, &input, &mut output).unwrap() as usize;
+                }
+
+                output[0]
+            };
+
+            // Special cases
+            assert_eq!(mult(0, 0, 8), 0);
+            assert_eq!(mult(1, 0, 11), 0);
+            assert_eq!(mult(0, 1, 8), 0);
+            assert_eq!(mult(1, 1, 11), 1);
+
+            // Non-overflowing calculations
+            assert_eq!(mult(3, 7, 17), 21);
+            assert_eq!(mult(7, 3, 29), 21);
+            assert_eq!(mult(22, 11, 74), 242);
+
+            // Overflowing calculations
+            assert_eq!(mult(22, 12, 74), 8);
+            assert_eq!(mult(128, 64, 392), 0);
+            assert_eq!(mult(142, 142, 434), 196);
         }
     }
 }
