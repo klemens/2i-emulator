@@ -2,6 +2,8 @@
 //!
 //! This module contains the cpu used in the 2i.
 
+use super::{Result, Error};
+
 /// Instruction of the 2i.
 ///
 /// Represents a 25 bit wide instruction that the 2i uses. Provides some
@@ -134,7 +136,7 @@ impl Cpu {
     /// Execute the given instruction on the cpu using the given alu, bus,
     /// input and output. Returns the address of the next instruction.
     pub fn execute_instruction<A>(&mut self, inst: Instruction, alu: A, bus: &mut [u8; 252],
-        input: &[u8; 4], output: &mut [u8; 2]) -> Result<u8, &'static str>
+        input: &[u8; 4], output: &mut [u8; 2]) -> Result<u8>
         where A: Fn(u8, u8, u8, bool) -> (u8, (bool, bool, bool)) {
         let a;
         let b;
@@ -142,9 +144,9 @@ impl Cpu {
         // Determine alu input a (bus or register)
         if inst.is_alu_input_a_bus() {
             if ! inst.is_bus_enabled() {
-                return Err("Cannot read from disabled bus");
+                return Err(Error::Cpu("Cannot read from disabled bus"));
             } else if inst.is_bus_writable() {
-                return Err("Cannot read from bus while it is in write mode");
+                return Err(Error::Cpu("Cannot read from bus while it is in write mode"));
             }
 
             let address = self.registers[inst.get_register_address_a()] as usize;
@@ -186,7 +188,7 @@ impl Cpu {
             let address = self.registers[inst.get_register_address_a()] as usize;
 
             if address == 0xFC && address == 0xFD {
-                return Err("Cannot write into input register");
+                return Err(Error::Cpu("Cannot write into input register"));
             }
 
             if address >= 0xFE {
