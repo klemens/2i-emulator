@@ -6,6 +6,7 @@
 ///
 /// Represents a 25 bit wide instruction that the 2i uses. Provides some
 /// conveniance methods to extract all different parts.
+#[derive(Copy, Clone)]
 pub struct Instruction {
     instruction: u32,
 }
