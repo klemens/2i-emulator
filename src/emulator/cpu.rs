@@ -3,6 +3,7 @@
 //! This module contains the cpu used in the 2i.
 
 use super::{Result, Error};
+use super::alu::Flags;
 use super::bus::Bus;
 use super::instruction::Instruction;
 
@@ -12,7 +13,7 @@ use super::instruction::Instruction;
 /// the three status registers (carry, negative, zero).
 pub struct Cpu {
     registers: [u8; 8],
-    flag_register: (bool, bool, bool),
+    flag_register: Flags,
 }
 
 impl Cpu {
@@ -20,7 +21,7 @@ impl Cpu {
     pub fn new() -> Cpu {
         Cpu {
             registers: [0; 8],
-            flag_register: (false, false, false),
+            flag_register: Flags::default(),
         }
     }
 
@@ -28,7 +29,7 @@ impl Cpu {
     /// input and output. Returns the address of the next instruction.
     pub fn execute_instruction<A, B>(&mut self, inst: Instruction, alu: A,
         bus: &mut B) -> Result<u8>
-        where A: Fn(u8, u8, u8, bool) -> (u8, (bool, bool, bool)),
+        where A: Fn(u8, u8, u8, bool) -> (u8, Flags),
               B: Bus {
         let a;
         let b;
@@ -59,7 +60,7 @@ impl Cpu {
         }
 
         // Calculate result using alu
-        let (result, flags) = alu(inst.get_alu_instruction(), a, b, self.flag_register.0);
+        let (result, flags) = alu(inst.get_alu_instruction(), a, b, self.flag_register.carry());
 
         // Write result to registers
         if inst.should_write_register() {
@@ -81,13 +82,13 @@ impl Cpu {
         }
 
         // Calculate and return the next instruction address
-        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.0))
+        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.carry()))
     }
 
     /// Calculate the next instruction address based on the current instruction
     /// and the flags.
-    fn calculate_next_instruction_address(inst: Instruction,
-        flags: (bool, bool, bool), stored_carry: bool) -> u8 {
+    fn calculate_next_instruction_address(inst: Instruction, flags: Flags,
+        stored_carry: bool) -> u8 {
         let next_address = inst.get_next_instruction_address();
         let next_address_base = next_address & 0b11110; // Mask off last bit
 
@@ -102,13 +103,13 @@ impl Cpu {
                 next_address_base | stored_carry as u8
             }
             0b100 => {
-                next_address_base | flags.0 as u8
+                next_address_base | flags.carry() as u8
             }
             0b101 => {
-                next_address_base | flags.2 as u8
+                next_address_base | flags.zero() as u8
             }
             0b110 => {
-                next_address_base | flags.1 as u8
+                next_address_base | flags.negative() as u8
             }
             0b111 => {
                 next_address_base
@@ -124,7 +125,7 @@ impl Cpu {
 mod tests {
     use super::*;
     use ::emulator::{Error, Result};
-    use ::emulator::alu::calculate;
+    use ::emulator::alu::{calculate, Flags};
     use ::emulator::bus::Bus;
     use ::emulator::instruction::Instruction;
 
@@ -138,36 +139,36 @@ mod tests {
         };
 
         // No modification
-        assert_eq!(na(0b00_00000, (false, false, false), false), 0b00000);
-        assert_eq!(na(0b00_11100, (false, false, false), false), 0b11100);
-        assert_eq!(na(0b00_11111, (false, false, false), false), 0b11111);
-        assert_eq!(na(0b00_00000, ( true,  true,  true),  true), 0b00000);
-        assert_eq!(na(0b00_11100, ( true,  true,  true),  true), 0b11100);
-        assert_eq!(na(0b00_11111, ( true,  true,  true),  true), 0b11111);
+        assert_eq!(na(0b00_00000, Flags::new(false, false, false), false), 0b00000);
+        assert_eq!(na(0b00_11100, Flags::new(false, false, false), false), 0b11100);
+        assert_eq!(na(0b00_11111, Flags::new(false, false, false), false), 0b11111);
+        assert_eq!(na(0b00_00000, Flags::new( true,  true,  true),  true), 0b00000);
+        assert_eq!(na(0b00_11100, Flags::new( true,  true,  true),  true), 0b11100);
+        assert_eq!(na(0b00_11111, Flags::new( true,  true,  true),  true), 0b11111);
 
         // Set last bit to 1
-        assert_eq!(na(0b01_11110, (false, false, false), false), 0b11111);
-        assert_eq!(na(0b01_11110, ( true,  true,  true),  true), 0b11111);
+        assert_eq!(na(0b01_11110, Flags::new(false, false, false), false), 0b11111);
+        assert_eq!(na(0b01_11110, Flags::new( true,  true,  true),  true), 0b11111);
 
         // Set last bit to stored carry
-        assert_eq!(na(0b01_11111, (false, false, false), false), 0b11110);
-        assert_eq!(na(0b01_11111, (false, false, false),  true), 0b11111);
+        assert_eq!(na(0b01_11111, Flags::new(false, false, false), false), 0b11110);
+        assert_eq!(na(0b01_11111, Flags::new(false, false, false),  true), 0b11111);
 
         // Set last bit to carry out
-        assert_eq!(na(0b10_11110, (false, false, false), false), 0b11110);
-        assert_eq!(na(0b10_11110, ( true, false, false), false), 0b11111);
+        assert_eq!(na(0b10_11110, Flags::new(false, false, false), false), 0b11110);
+        assert_eq!(na(0b10_11110, Flags::new( true, false, false), false), 0b11111);
 
         // Set last bit to zero out
-        assert_eq!(na(0b10_11111, (false, false, false), false), 0b11110);
-        assert_eq!(na(0b10_11111, (false, false,  true), false), 0b11111);
+        assert_eq!(na(0b10_11111, Flags::new(false, false, false), false), 0b11110);
+        assert_eq!(na(0b10_11111, Flags::new(false, false,  true), false), 0b11111);
 
         // Set last bit to negative out
-        assert_eq!(na(0b11_11110, (false, false, false), false), 0b11110);
-        assert_eq!(na(0b11_11110, (false,  true, false), false), 0b11111);
+        assert_eq!(na(0b11_11110, Flags::new(false, false, false), false), 0b11110);
+        assert_eq!(na(0b11_11110, Flags::new(false,  true, false), false), 0b11111);
 
         // Set last bit to 0
-        assert_eq!(na(0b11_11111, (false, false, false), false), 0b11110);
-        assert_eq!(na(0b11_11111, (false,  true, false), false), 0b11110);
+        assert_eq!(na(0b11_11111, Flags::new(false, false, false), false), 0b11110);
+        assert_eq!(na(0b11_11111, Flags::new(false,  true, false), false), 0b11110);
     }
 
     #[test]
