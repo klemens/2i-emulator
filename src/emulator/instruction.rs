@@ -175,4 +175,10 @@ mod tests {
     fn from_long_string() {
         Instruction::new_from_string("11111111111111111111111110").unwrap();
     }
+
+    #[test]
+    #[should_panic]
+    fn from_invalid_string() {
+        Instruction::new_from_string("00a0010010000010111000000").unwrap();
+    }
 }
