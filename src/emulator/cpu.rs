@@ -4,15 +4,7 @@
 
 use super::{Result, Error};
 use super::bus::Bus;
-
-/// Instruction of the 2i.
-///
-/// Represents a 25 bit wide instruction that the 2i uses. Provides some
-/// conveniance methods to extract all different parts.
-#[derive(Copy, Clone)]
-pub struct Instruction {
-    instruction: u32,
-}
+use super::instruction::Instruction;
 
 /// Cpu of the 2i.
 ///
@@ -21,108 +13,6 @@ pub struct Instruction {
 pub struct Cpu {
     registers: [u8; 8],
     flag_register: (bool, bool, bool),
-}
-
-impl Instruction {
-    /// Create a new Instruction from a u32. Fails if more than 25 bits
-    /// are used.
-    pub fn new(instruction: u32) -> Option<Instruction> {
-        if instruction.leading_zeros() < 32 - 25 {
-            None
-        } else {
-            Some(Instruction { instruction: instruction })
-        }
-    }
-
-    /// Creat a new Instruction from a binary string (consisting only of ones
-    /// and zeroes). Failes if more than 25 bits (characters) are used.
-    pub fn new_from_string(string: &str) -> Option<Instruction> {
-        if string.len() > 25 {
-            None
-        } else {
-            u32::from_str_radix(string, 2).ok()
-                .map(|instruction| Instruction { instruction: instruction })
-        }
-    }
-
-    /// Get the instruction as a 25 bit integer (the first 7 most significant
-    /// bits of the u32 are always zero)
-    pub fn get_instruction(&self) -> u32 {
-        self.instruction
-    }
-
-    /// MCHFLG
-    pub fn should_store_flags(&self) -> bool {
-        self.extract_bit(0)
-    }
-
-    /// MALUS0-3 (4 bit)
-    pub fn get_alu_instruction(&self) -> u8 {
-        self.extract_bit_pattern(0b1111, 1)
-    }
-
-    /// MALUIB
-    pub fn is_alu_input_b_const(&self) -> bool {
-        self.extract_bit(5)
-    }
-
-    /// MALUIA
-    pub fn is_alu_input_a_bus(&self) -> bool {
-        self.extract_bit(6)
-    }
-
-    /// MRGWE
-    pub fn should_write_register(&self) -> bool {
-        self.extract_bit(7)
-    }
-
-    /// MRGWS
-    pub fn should_write_register_b(&self) -> bool {
-        self.extract_bit(8)
-    }
-
-    /// MRGAB0-2 (3 bit)
-    pub fn get_register_address_b(&self) -> usize {
-        self.extract_bit_pattern(0b111, 9) as usize
-    }
-
-    /// MRGAB0-3 (4 bit)
-    pub fn get_constant_input(&self) -> u8 {
-        self.extract_bit_pattern(0b1111, 9)
-    }
-
-    /// MRGAA0-2 (3 bit)
-    pub fn get_register_address_a(&self) -> usize {
-        self.extract_bit_pattern(0b111, 13) as usize
-    }
-
-    /// BUSEN
-    pub fn is_bus_enabled(&self) -> bool {
-        self.extract_bit(16)
-    }
-
-    /// BUSWR
-    pub fn is_bus_writable(&self) -> bool {
-        self.extract_bit(17)
-    }
-
-    /// NA0-4 (5 bit)
-    pub fn get_next_instruction_address(&self) -> u8 {
-        self.extract_bit_pattern(0b11111, 18)
-    }
-
-    /// MAC0-1 (2 bit)
-    pub fn get_address_control(&self) -> u8 {
-        self.extract_bit_pattern(0b11, 23)
-    }
-
-    fn extract_bit(&self, position: u8) -> bool {
-        return self.instruction & 0b1 << position != 0;
-    }
-
-    fn extract_bit_pattern(&self, mask: u8, position: u8) -> u8 {
-        return ((self.instruction & (mask as u32) << position) >> position) as u8;
-    }
 }
 
 impl Cpu {
@@ -232,188 +122,122 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
-    mod instruction {
-        use super::super::*;
+    use super::*;
+    use ::emulator::{Error, Result};
+    use ::emulator::alu::calculate;
+    use ::emulator::bus::Bus;
+    use ::emulator::instruction::Instruction;
 
-        #[test]
-        #[should_panic]
-        fn from_long_integer() {
-            Instruction::new(0b1000000000000000000000000_0).unwrap();
-        }
+    #[test]
+    fn address_calculation() {
+        // Helper function to keep asserts short
+        let na = |inst: u32, flag_register, carry| {
+            let inst = Instruction::new(inst << 18).unwrap();
+            let result = Cpu::calculate_next_instruction_address(inst, flag_register, carry);
+            result
+        };
 
-        #[test]
-        fn extract_fields () {
-            // Load constant FC into register 0
-            let i1 = Instruction::new(0b00_00001_00_000_1100_01_01_0001_0).unwrap();
-            assert_eq!(i1.should_store_flags(), false);
-            assert_eq!(i1.get_alu_instruction(), 0b0001);
-            assert_eq!(i1.is_alu_input_b_const(), true);
-            assert_eq!(i1.is_alu_input_a_bus(), false);
-            assert_eq!(i1.should_write_register(), true);
-            assert_eq!(i1.should_write_register_b(), false);
-            assert_eq!(i1.get_constant_input(), 0b1100);
-            assert_eq!(i1.get_register_address_b(), 0b100);
-            assert_eq!(i1.get_register_address_a(), 0b000);
-            assert_eq!(i1.is_bus_enabled(), false);
-            assert_eq!(i1.is_bus_writable(), false);
-            assert_eq!(i1.get_next_instruction_address(), 0b00001);
-            assert_eq!(i1.get_address_control(), 0b00);
+        // No modification
+        assert_eq!(na(0b00_00000, (false, false, false), false), 0b00000);
+        assert_eq!(na(0b00_11100, (false, false, false), false), 0b11100);
+        assert_eq!(na(0b00_11111, (false, false, false), false), 0b11111);
+        assert_eq!(na(0b00_00000, ( true,  true,  true),  true), 0b00000);
+        assert_eq!(na(0b00_11100, ( true,  true,  true),  true), 0b11100);
+        assert_eq!(na(0b00_11111, ( true,  true,  true),  true), 0b11111);
 
-            // Load from memory location FC (register 0) into register 2
-            let i1 = Instruction::new(0b00_00010_01_000_0010_11_10_0000_0).unwrap();
-            assert_eq!(i1.should_store_flags(), false);
-            assert_eq!(i1.get_alu_instruction(), 0b0000);
-            assert_eq!(i1.is_alu_input_b_const(), false);
-            assert_eq!(i1.is_alu_input_a_bus(), true);
-            assert_eq!(i1.should_write_register(), true);
-            assert_eq!(i1.should_write_register_b(), true);
-            assert_eq!(i1.get_constant_input(), 0b0010);
-            assert_eq!(i1.get_register_address_b(), 0b010);
-            assert_eq!(i1.get_register_address_a(), 0b000);
-            assert_eq!(i1.is_bus_enabled(), true);
-            assert_eq!(i1.is_bus_writable(), false);
-            assert_eq!(i1.get_next_instruction_address(), 0b00010);
-            assert_eq!(i1.get_address_control(), 0b00);
-        }
+        // Set last bit to 1
+        assert_eq!(na(0b01_11110, (false, false, false), false), 0b11111);
+        assert_eq!(na(0b01_11110, ( true,  true,  true),  true), 0b11111);
 
-        #[test]
-        fn from_string() {
-            let i1a = Instruction::new(0b00_00001_00_000_1100_01_01_0001_0).unwrap();
-            let i2a = Instruction::new(0b00_00010_01_000_0010_11_10_0000_0).unwrap();
-            let i3a = Instruction::new(0b11_11111_11_111_1111_11_11_1111_1).unwrap();
-            let i1b = Instruction::new_from_string("0000001000001100010100010").unwrap();
-            let i2b = Instruction::new_from_string("0000010010000010111000000").unwrap();
-            let i3b = Instruction::new_from_string("1111111111111111111111111").unwrap();
+        // Set last bit to stored carry
+        assert_eq!(na(0b01_11111, (false, false, false), false), 0b11110);
+        assert_eq!(na(0b01_11111, (false, false, false),  true), 0b11111);
 
-            assert_eq!(i1a.get_instruction(), i1b.get_instruction());
-            assert_eq!(i2a.get_instruction(), i2b.get_instruction());
-            assert_eq!(i3a.get_instruction(), i3b.get_instruction());
-        }
+        // Set last bit to carry out
+        assert_eq!(na(0b10_11110, (false, false, false), false), 0b11110);
+        assert_eq!(na(0b10_11110, ( true, false, false), false), 0b11111);
 
-        #[test]
-        #[should_panic]
-        fn from_long_string() {
-            Instruction::new_from_string("11111111111111111111111110").unwrap();
-        }
+        // Set last bit to zero out
+        assert_eq!(na(0b10_11111, (false, false, false), false), 0b11110);
+        assert_eq!(na(0b10_11111, (false, false,  true), false), 0b11111);
+
+        // Set last bit to negative out
+        assert_eq!(na(0b11_11110, (false, false, false), false), 0b11110);
+        assert_eq!(na(0b11_11110, (false,  true, false), false), 0b11111);
+
+        // Set last bit to 0
+        assert_eq!(na(0b11_11111, (false, false, false), false), 0b11110);
+        assert_eq!(na(0b11_11111, (false,  true, false), false), 0b11110);
     }
 
-    mod cpu {
-        use super::super::*;
-        use ::emulator::{Error, Result};
-        use ::emulator::alu::calculate;
-        use ::emulator::bus::Bus;
+    #[test]
+    fn multiplication() {
+        let program: Vec<_> = [
+            0b00_00001_00_000_1100_01_01_0001_0, // in:  R0 = FC
+            0b00_00010_01_000_0000_01_10_0000_0, //      R0 = (R0)
+            0b00_00011_00_001_1101_01_01_0001_0, //      R1 = FD
+            0b00_00100_01_001_0000_01_10_0000_0, //      R1 = (R1)
+            0b00_00101_00_010_0000_01_00_0011_0, //      R2 = 0
+            0b10_00111_00_000_0000_00_00_0000_0, // tst: TEST R0, ZO
+            0b00_01000_00_000_1111_01_01_0100_0, //        R0 = R0 + FF, JP add
+            0b00_01001_00_001_1110_01_01_0001_0, //        R1 = FF, JP out
+            0b00_00101_00_010_0001_01_00_0100_0, // add: R2 = R2 + R1, JP tst
+            0b00_00000_11_001_0010_00_00_0001_0, // out: (R1) = R2, JP in
+        ].iter().map(|&i| Instruction::new(i)).collect();
 
-        #[test]
-        fn address_calculation() {
-            // Helper function to keep asserts short
-            let na = |inst: u32, flag_register, carry| {
-                let inst = Instruction::new(inst << 18).unwrap();
-                let result = Cpu::calculate_next_instruction_address(inst, flag_register, carry);
-                result
+        let mult = |a, b, steps| -> u8 {
+            let mut next_instruction_address = 0;
+            let mut bus = IoBus {
+                input: [a, b, 0, 0],
+                output: [0, 0],
             };
+            let mut cpu = Cpu::new();
 
-            // No modification
-            assert_eq!(na(0b00_00000, (false, false, false), false), 0b00000);
-            assert_eq!(na(0b00_11100, (false, false, false), false), 0b11100);
-            assert_eq!(na(0b00_11111, (false, false, false), false), 0b11111);
-            assert_eq!(na(0b00_00000, ( true,  true,  true),  true), 0b00000);
-            assert_eq!(na(0b00_11100, ( true,  true,  true),  true), 0b11100);
-            assert_eq!(na(0b00_11111, ( true,  true,  true),  true), 0b11111);
-
-            // Set last bit to 1
-            assert_eq!(na(0b01_11110, (false, false, false), false), 0b11111);
-            assert_eq!(na(0b01_11110, ( true,  true,  true),  true), 0b11111);
-
-            // Set last bit to stored carry
-            assert_eq!(na(0b01_11111, (false, false, false), false), 0b11110);
-            assert_eq!(na(0b01_11111, (false, false, false),  true), 0b11111);
-
-            // Set last bit to carry out
-            assert_eq!(na(0b10_11110, (false, false, false), false), 0b11110);
-            assert_eq!(na(0b10_11110, ( true, false, false), false), 0b11111);
-
-            // Set last bit to zero out
-            assert_eq!(na(0b10_11111, (false, false, false), false), 0b11110);
-            assert_eq!(na(0b10_11111, (false, false,  true), false), 0b11111);
-
-            // Set last bit to negative out
-            assert_eq!(na(0b11_11110, (false, false, false), false), 0b11110);
-            assert_eq!(na(0b11_11110, (false,  true, false), false), 0b11111);
-
-            // Set last bit to 0
-            assert_eq!(na(0b11_11111, (false, false, false), false), 0b11110);
-            assert_eq!(na(0b11_11111, (false,  true, false), false), 0b11110);
-        }
-
-        #[test]
-        fn multiplication() {
-            let program: Vec<_> = [
-                0b00_00001_00_000_1100_01_01_0001_0, // in:  R0 = FC
-                0b00_00010_01_000_0000_01_10_0000_0, //      R0 = (R0)
-                0b00_00011_00_001_1101_01_01_0001_0, //      R1 = FD
-                0b00_00100_01_001_0000_01_10_0000_0, //      R1 = (R1)
-                0b00_00101_00_010_0000_01_00_0011_0, //      R2 = 0
-                0b10_00111_00_000_0000_00_00_0000_0, // tst: TEST R0, ZO
-                0b00_01000_00_000_1111_01_01_0100_0, //        R0 = R0 + FF, JP add
-                0b00_01001_00_001_1110_01_01_0001_0, //        R1 = FF, JP out
-                0b00_00101_00_010_0001_01_00_0100_0, // add: R2 = R2 + R1, JP tst
-                0b00_00000_11_001_0010_00_00_0001_0, // out: (R1) = R2, JP in
-            ].iter().map(|&i| Instruction::new(i)).collect();
-
-            let mult = |a, b, steps| -> u8 {
-                let mut next_instruction_address = 0;
-                let mut bus = IoBus {
-                    input: [a, b, 0, 0],
-                    output: [0, 0],
-                };
-                let mut cpu = Cpu::new();
-
-                for _ in 0..steps {
-                    let inst = program[next_instruction_address].unwrap();
-                    next_instruction_address = cpu.execute_instruction(inst,
-                        calculate, &mut bus).unwrap() as usize;
-                }
-
-                bus.output[0]
-            };
-
-            // Special cases
-            assert_eq!(mult(0, 0, 8), 0);
-            assert_eq!(mult(1, 0, 11), 0);
-            assert_eq!(mult(0, 1, 8), 0);
-            assert_eq!(mult(1, 1, 11), 1);
-
-            // Non-overflowing calculations
-            assert_eq!(mult(3, 7, 17), 21);
-            assert_eq!(mult(7, 3, 29), 21);
-            assert_eq!(mult(22, 11, 74), 242);
-
-            // Overflowing calculations
-            assert_eq!(mult(22, 12, 74), 8);
-            assert_eq!(mult(128, 64, 392), 0);
-            assert_eq!(mult(142, 142, 434), 196);
-        }
-
-        /// Mock bus used for simulating io in tests
-        struct IoBus {
-            input: [u8; 4],
-            output: [u8; 2],
-        }
-        impl Bus for IoBus {
-            fn read(&self, address: u8) -> Result<u8> {
-                if address >= 0xFC {
-                    Ok(self.input[(address - 0xFC) as usize])
-                } else {
-                    Err(Error::Bus("Only supports reading from input register"))
-                }
+            for _ in 0..steps {
+                let inst = program[next_instruction_address].unwrap();
+                next_instruction_address = cpu.execute_instruction(inst,
+                    calculate, &mut bus).unwrap() as usize;
             }
-            fn write(&mut self, address: u8, value: u8) -> Result<()> {
-                if address >= 0xFE {
-                    self.output[(address - 0xFE) as usize] = value;
-                    Ok(())
-                } else {
-                    Err(Error::Bus("Only supports writing to output register"))
-                }
+
+            bus.output[0]
+        };
+
+        // Special cases
+        assert_eq!(mult(0, 0, 8), 0);
+        assert_eq!(mult(1, 0, 11), 0);
+        assert_eq!(mult(0, 1, 8), 0);
+        assert_eq!(mult(1, 1, 11), 1);
+
+        // Non-overflowing calculations
+        assert_eq!(mult(3, 7, 17), 21);
+        assert_eq!(mult(7, 3, 29), 21);
+        assert_eq!(mult(22, 11, 74), 242);
+
+        // Overflowing calculations
+        assert_eq!(mult(22, 12, 74), 8);
+        assert_eq!(mult(128, 64, 392), 0);
+        assert_eq!(mult(142, 142, 434), 196);
+    }
+
+    /// Mock bus used for simulating io in tests
+    struct IoBus {
+        input: [u8; 4],
+        output: [u8; 2],
+    }
+    impl Bus for IoBus {
+        fn read(&self, address: u8) -> Result<u8> {
+            if address >= 0xFC {
+                Ok(self.input[(address - 0xFC) as usize])
+            } else {
+                Err(Error::Bus("Only supports reading from input register"))
+            }
+        }
+        fn write(&mut self, address: u8, value: u8) -> Result<()> {
+            if address >= 0xFE {
+                self.output[(address - 0xFE) as usize] = value;
+                Ok(())
+            } else {
+                Err(Error::Bus("Only supports writing to output register"))
             }
         }
     }

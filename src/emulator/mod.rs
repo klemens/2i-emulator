@@ -3,6 +3,7 @@ use std::result;
 pub mod alu;
 pub mod bus;
 pub mod cpu;
+pub mod instruction;
 
 #[derive(Debug)]
 pub enum Error {
