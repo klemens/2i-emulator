@@ -119,7 +119,7 @@ pub fn calculate(instruction: u8, a: u8, b: u8, mut carry: bool) -> (u8, Flags) 
     return (f, Flags::new(carry, negative, zero));
 }
 
-/// Flags of the 2i
+/// Flags of the 2i.
 ///
 /// Represents the flags used by the alu to describe its result. Can be used
 /// for conditional jumps and as further input to the alu in case of the carry.

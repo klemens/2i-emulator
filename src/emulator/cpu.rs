@@ -2,7 +2,7 @@
 //!
 //! This module contains the cpu used in the 2i.
 
-use super::{Result, Error};
+use super::{Error, Result};
 use super::alu::Flags;
 use super::bus::Bus;
 use super::instruction::Instruction;
@@ -115,7 +115,7 @@ impl Cpu {
                 next_address_base
             }
             _ => {
-                panic!("Invlid address control")
+                panic!("Invalid address control")
             }
         }
     }
