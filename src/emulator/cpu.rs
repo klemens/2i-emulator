@@ -184,7 +184,7 @@ mod tests {
             0b00_01001_00_001_1110_01_01_0001_0, //        R1 = FF, JP out
             0b00_00101_00_010_0001_01_00_0100_0, // add: R2 = R2 + R1, JP tst
             0b00_00000_11_001_0010_00_00_0001_0, // out: (R1) = R2, JP in
-        ].iter().map(|&i| Instruction::new(i)).collect();
+        ].iter().map(|&i| Instruction::new(i).unwrap()).collect();
 
         let mult = |a, b, steps| -> u8 {
             let mut next_instruction_address = 0;
@@ -195,7 +195,7 @@ mod tests {
             let mut cpu = Cpu::new();
 
             for _ in 0..steps {
-                let inst = program[next_instruction_address].unwrap();
+                let inst = program[next_instruction_address];
                 next_instruction_address = cpu.execute_instruction(inst,
                     calculate, &mut bus).unwrap() as usize;
             }

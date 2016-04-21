@@ -10,6 +10,7 @@ pub mod instruction;
 pub enum Error {
     Bus(&'static str),
     Cpu(&'static str),
+    Instruction(&'static str),
 }
 
 impl fmt::Display for Error {
@@ -17,6 +18,7 @@ impl fmt::Display for Error {
         match self {
             &Error::Bus(s) => write!(f, "Bus error: {}", s),
             &Error::Cpu(s) => write!(f, "Cpu error: {}", s),
+            &Error::Instruction(s) => write!(f, "Instruction error: {}", s),
         }
     }
 }

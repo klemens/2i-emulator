@@ -1,5 +1,7 @@
 //! The 2i instruction
 
+use super::{Error, Result};
+
 /// Instruction of the 2i.
 ///
 /// Represents a 25 bit wide instruction that the 2i uses. Provides some
@@ -12,21 +14,22 @@ pub struct Instruction {
 impl Instruction {
     /// Create a new Instruction from a u32. Fails if more than 25 bits
     /// are used.
-    pub fn new(instruction: u32) -> Option<Instruction> {
+    pub fn new(instruction: u32) -> Result<Instruction> {
         if instruction.leading_zeros() < 32 - 25 {
-            None
+            Err(Error::Instruction("Given u32 too large (more then 25 bit)"))
         } else {
-            Some(Instruction { instruction: instruction })
+            Ok(Instruction { instruction: instruction })
         }
     }
 
     /// Creat a new Instruction from a binary string (consisting only of ones
     /// and zeroes). Failes if more than 25 bits (characters) are used.
-    pub fn new_from_string(string: &str) -> Option<Instruction> {
+    pub fn new_from_string(string: &str) -> Result<Instruction> {
         if string.len() > 25 {
-            None
+            Err(Error::Instruction("Given str too large (more then 25 bit)"))
         } else {
-            u32::from_str_radix(string, 2).ok()
+            u32::from_str_radix(string, 2)
+                .map_err(|_| Error::Instruction("Error parsing the given str"))
                 .map(|instruction| Instruction { instruction: instruction })
         }
     }
