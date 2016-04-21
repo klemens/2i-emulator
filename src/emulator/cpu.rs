@@ -3,6 +3,7 @@
 //! This module contains the cpu used in the 2i.
 
 use super::{Result, Error};
+use super::bus::Bus;
 
 /// Instruction of the 2i.
 ///
@@ -135,9 +136,10 @@ impl Cpu {
 
     /// Execute the given instruction on the cpu using the given alu, bus,
     /// input and output. Returns the address of the next instruction.
-    pub fn execute_instruction<A>(&mut self, inst: Instruction, alu: A, bus: &mut [u8; 252],
-        input: &[u8; 4], output: &mut [u8; 2]) -> Result<u8>
-        where A: Fn(u8, u8, u8, bool) -> (u8, (bool, bool, bool)) {
+    pub fn execute_instruction<A, B>(&mut self, inst: Instruction, alu: A,
+        bus: &mut B) -> Result<u8>
+        where A: Fn(u8, u8, u8, bool) -> (u8, (bool, bool, bool)),
+              B: Bus {
         let a;
         let b;
 
@@ -149,12 +151,7 @@ impl Cpu {
                 return Err(Error::Cpu("Cannot read from bus while it is in write mode"));
             }
 
-            let address = self.registers[inst.get_register_address_a()] as usize;
-            if address >= 0xFC { // FC - FF are input registers
-                a = input[(address - 0xFC)]
-            } else {
-                a = bus[address];
-            }
+            a = try!(bus.read(self.registers[inst.get_register_address_a()]));
         } else {
             a = self.registers[inst.get_register_address_a()];
         }
@@ -185,17 +182,7 @@ impl Cpu {
 
         // Write results to the bus
         if inst.is_bus_enabled() && inst.is_bus_writable() {
-            let address = self.registers[inst.get_register_address_a()] as usize;
-
-            if address == 0xFC && address == 0xFD {
-                return Err(Error::Cpu("Cannot write into input register"));
-            }
-
-            if address >= 0xFE {
-                output[address - 0xFE] = result;
-            } else {
-                bus[address] = result;
-            }
+            try!(bus.write(self.registers[inst.get_register_address_a()], result));
         }
 
         // Store flags in the flag register
@@ -312,7 +299,9 @@ mod tests {
 
     mod cpu {
         use super::super::*;
+        use ::emulator::{Error, Result};
         use ::emulator::alu::calculate;
+        use ::emulator::bus::Bus;
 
         #[test]
         fn address_calculation() {
@@ -373,18 +362,19 @@ mod tests {
 
             let mult = |a, b, steps| -> u8 {
                 let mut next_instruction_address = 0;
-                let mut bus = [0; 252];
-                let input = [a, b, 0, 0];
-                let mut output = [0; 2];
+                let mut bus = IoBus {
+                    input: [a, b, 0, 0],
+                    output: [0, 0],
+                };
                 let mut cpu = Cpu::new();
 
                 for _ in 0..steps {
                     let inst = program[next_instruction_address].unwrap();
                     next_instruction_address = cpu.execute_instruction(inst,
-                        calculate, &mut bus, &input, &mut output).unwrap() as usize;
+                        calculate, &mut bus).unwrap() as usize;
                 }
 
-                output[0]
+                bus.output[0]
             };
 
             // Special cases
@@ -402,6 +392,29 @@ mod tests {
             assert_eq!(mult(22, 12, 74), 8);
             assert_eq!(mult(128, 64, 392), 0);
             assert_eq!(mult(142, 142, 434), 196);
+        }
+
+        /// Mock bus used for simulating io in tests
+        struct IoBus {
+            input: [u8; 4],
+            output: [u8; 2],
+        }
+        impl Bus for IoBus {
+            fn read(&self, address: u8) -> Result<u8> {
+                if address >= 0xFC {
+                    Ok(self.input[(address - 0xFC) as usize])
+                } else {
+                    Err(Error::Bus("Only supports reading from input register"))
+                }
+            }
+            fn write(&mut self, address: u8, value: u8) -> Result<()> {
+                if address >= 0xFE {
+                    self.output[(address - 0xFE) as usize] = value;
+                    Ok(())
+                } else {
+                    Err(Error::Bus("Only supports writing to output register"))
+                }
+            }
         }
     }
 }
