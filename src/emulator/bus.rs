@@ -3,7 +3,7 @@
 //! This module contains a trait for the 8 bit bus used in the 2i and several
 //! types implementing it.
 
-use super::Result;
+use super::{Error, Result};
 use std::cell::RefCell;
 
 /// Bus of the 2i.
@@ -69,6 +69,56 @@ impl<'a> Bus for Ram<'a> {
     }
 }
 
+/// IoRegisters of the 2i.
+///
+/// Represents the input and output registers of the 2i. Reading from an
+/// address lower than FC or writing to an address lower than FE will result
+/// in an error.
+pub struct IoRegisters {
+    input: [u8; 4],
+    output: [u8; 2],
+}
+
+impl IoRegisters {
+    /// Create a new IoRegisters with all registers initialised to zero.
+    pub fn new() -> IoRegisters {
+        IoRegisters {
+            input: [0; 4],
+            output: [0; 2],
+        }
+    }
+
+    /// Access the input registers as a slice.
+    pub fn inspect_input(&mut self) -> &mut [u8; 4] {
+        &mut self.input
+    }
+
+    /// Access the output registers as a slice.
+    pub fn inspect_output(&mut self) -> &mut [u8; 2] {
+        &mut self.output
+    }
+}
+
+impl Bus for IoRegisters {
+    fn read(&self, address: u8) -> Result<u8> {
+        if address >= 0xFC {
+            Ok(self.input[(address - 0xFC) as usize])
+        } else {
+            Err(Error::Bus("Only supports reading from input registers"))
+        }
+    }
+    fn write(&mut self, address: u8, value: u8) -> Result<()> {
+        if address >= 0xFE {
+            self.output[(address - 0xFE) as usize] = value;
+            Ok(())
+        } else if address >= 0xFC {
+            Err(Error::Bus("Cannot write to input register"))
+        } else {
+            Err(Error::Bus("Only supports writing to output registers"))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -124,5 +174,29 @@ mod tests {
         assert_eq!(overlay.borrow().read(4).unwrap(), 0);
 
         assert_eq!(base.inspect()[0..5], [42, 43, 0, 0, 46]);
+    }
+
+    #[test]
+    fn io_register() {
+        let mut io = IoRegisters::new();
+
+        io.inspect_input().clone_from_slice(&[42, 43, 44, 45]);
+        assert_eq!(io.read(0xFC).unwrap(), 42);
+        assert_eq!(io.read(0xFD).unwrap(), 43);
+        assert_eq!(io.read(0xFE).unwrap(), 44);
+        assert_eq!(io.read(0xFF).unwrap(), 45);
+
+        io.write(0xFE, 46).unwrap();
+        io.write(0xFF, 47).unwrap();
+        assert_eq!(io.inspect_output(), &[46, 47]);
+        assert_eq!(io.read(0xFE).unwrap(), 44);
+        assert_eq!(io.read(0xFF).unwrap(), 45);
+
+        assert!(io.read(0).is_err());
+        assert!(io.read(0xFB).is_err());
+        assert!(io.write(0, 0).is_err());
+        assert!(io.write(0xFB, 0).is_err());
+        assert!(io.write(0xFC, 0).is_err());
+        assert!(io.write(0xFD, 0).is_err());
     }
 }

@@ -124,9 +124,8 @@ impl Cpu {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::emulator::{Error, Result};
     use ::emulator::alu::{calculate, Flags};
-    use ::emulator::bus::Bus;
+    use ::emulator::bus::IoRegisters;
     use ::emulator::instruction::Instruction;
 
     #[test]
@@ -188,11 +187,10 @@ mod tests {
 
         let mult = |a, b, steps| -> u8 {
             let mut next_instruction_address = 0;
-            let mut bus = IoBus {
-                input: [a, b, 0, 0],
-                output: [0, 0],
-            };
             let mut cpu = Cpu::new();
+            let mut bus = IoRegisters::new();
+
+            bus.inspect_input()[0..2].clone_from_slice(&[a, b]);
 
             for _ in 0..steps {
                 let inst = program[next_instruction_address];
@@ -200,7 +198,7 @@ mod tests {
                     calculate, &mut bus).unwrap() as usize;
             }
 
-            bus.output[0]
+            bus.inspect_output()[0]
         };
 
         // Special cases
@@ -218,28 +216,5 @@ mod tests {
         assert_eq!(mult(22, 12, 74), 8);
         assert_eq!(mult(128, 64, 392), 0);
         assert_eq!(mult(142, 142, 434), 196);
-    }
-
-    /// Mock bus used for simulating io in tests
-    struct IoBus {
-        input: [u8; 4],
-        output: [u8; 2],
-    }
-    impl Bus for IoBus {
-        fn read(&self, address: u8) -> Result<u8> {
-            if address >= 0xFC {
-                Ok(self.input[(address - 0xFC) as usize])
-            } else {
-                Err(Error::Bus("Only supports reading from input register"))
-            }
-        }
-        fn write(&mut self, address: u8, value: u8) -> Result<()> {
-            if address >= 0xFE {
-                self.output[(address - 0xFE) as usize] = value;
-                Ok(())
-            } else {
-                Err(Error::Bus("Only supports writing to output register"))
-            }
-        }
     }
 }
