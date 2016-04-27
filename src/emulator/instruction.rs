@@ -77,7 +77,14 @@ impl Instruction {
 
     /// MRGAB0-3 (4 bit)
     pub fn get_constant_input(&self) -> u8 {
-        self.extract_bit_pattern(0b1111, 9)
+        let c = self.extract_bit_pattern(0b1111, 9);
+
+        if c & 0b1000 != 0 {
+            // Set bits 4-7 to one if bit 3 is set
+            c | 0b11110000
+        } else {
+            c
+        }
     }
 
     /// MRGAA0-2 (3 bit)
@@ -134,7 +141,7 @@ mod tests {
         assert_eq!(i1.is_alu_input_a_bus(), false);
         assert_eq!(i1.should_write_register(), true);
         assert_eq!(i1.should_write_register_b(), false);
-        assert_eq!(i1.get_constant_input(), 0b1100);
+        assert_eq!(i1.get_constant_input(), 0b11111100);
         assert_eq!(i1.get_register_address_b(), 0b100);
         assert_eq!(i1.get_register_address_a(), 0b000);
         assert_eq!(i1.is_bus_enabled(), false);
@@ -150,7 +157,7 @@ mod tests {
         assert_eq!(i1.is_alu_input_a_bus(), true);
         assert_eq!(i1.should_write_register(), true);
         assert_eq!(i1.should_write_register_b(), true);
-        assert_eq!(i1.get_constant_input(), 0b0010);
+        assert_eq!(i1.get_constant_input(), 0b00000010);
         assert_eq!(i1.get_register_address_b(), 0b010);
         assert_eq!(i1.get_register_address_a(), 0b000);
         assert_eq!(i1.is_bus_enabled(), true);

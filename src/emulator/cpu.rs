@@ -49,12 +49,7 @@ impl Cpu {
 
         // Determine alu input b (constant or register)
         if inst.is_alu_input_b_const() {
-            let mut constant = inst.get_constant_input();
-            if constant & 0b1000 != 0 {
-                // Set bits 4-7 to one if bit 3 is set
-                constant |= 0b11110000;
-            }
-            b = constant;
+            b = inst.get_constant_input();
         } else {
             b = self.registers[inst.get_register_address_b()];
         }
