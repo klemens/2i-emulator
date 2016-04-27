@@ -119,6 +119,92 @@ impl Instruction {
     fn extract_bit_pattern(&self, mask: u8, position: u8) -> u8 {
         return ((self.instruction & (mask as u32) << position) >> position) as u8;
     }
+
+    fn to_text_paraphrase(&self, next_address: Option<u8>) -> String {
+        // Determine input a
+        let a = if self.is_alu_input_a_bus() {
+            format!("(R{})", self.get_register_address_a())
+        } else {
+            format!("R{}", self.get_register_address_a())
+        };
+
+        // Determine input b
+        let b = if self.is_alu_input_b_const() {
+            format!("{:X}", self.get_constant_input())
+        } else {
+            format!("R{}", self.get_register_address_b())
+        };
+
+        // Determine alu function
+        let result = match self.get_alu_instruction() {
+            0b0000 => a,
+            0b0001 => b,
+            0b0010 => format!("{} ⊽ {}", a, b),
+            0b0011 => "0".to_string(),
+            0b0100 => format!("{} + {}", a, b),
+            0b0101 => format!("{} + {} + 1", a, b),
+            0b0110 => format!("{} + {} + C", a, b),
+            0b0111 => format!("{} + {} + C̅", a, b),
+            0b1000 => format!("{} >> 1", a),
+            0b1001 => format!("{} ⤿> 1", a),
+            0b1010 => format!("{} C> 1", a),
+            0b1011 => format!("{} ?> 1", a),
+            0b1100 => "0".to_string(),
+            0b1101 => "0".to_string(),
+            0b1110 => "0".to_string(),
+            0b1111 => "0".to_string(),
+            i => panic!("Invalid instruction {}", i),
+        };
+
+        // Determine output
+        let format_register = || {
+            format!("R{}", if self.should_write_register_b() {
+                self.get_register_address_b()
+            } else {
+                self.get_register_address_a()
+            })
+        };
+        let output = if self.is_bus_enabled() && self.is_bus_writable() {
+            if self.should_write_register() {
+                format!("(R{}), {} = ", self.get_register_address_a(), format_register())
+            } else {
+                format!("(R{}) = ", self.get_register_address_a())
+            }
+        } else if self.should_write_register() {
+            format!("{} = ", format_register())
+        } else {
+            "TEST ".to_string()
+        };
+
+        // Determine address control and next address
+        let address_control = if self.get_address_control() == 0 &&
+            next_address == Some(self.get_next_instruction_address()) {
+            String::new()
+        } else {
+            let next_address = self.get_next_instruction_address();
+            let next_address_base = next_address >> 1; // Cut off last bit
+
+            match self.get_address_control() << 1 | (next_address & 0b00001) {
+                0b000 | 0b001 => format!("; JMP {:05b}", next_address),
+                0b010 => format!("; JMP {:04b}1", next_address_base),
+                0b011 => format!("; CF {:04b}C", next_address_base),
+                0b100 => format!("; CO {:04b}C", next_address_base),
+                0b101 => format!("; ZO {:04b}Z", next_address_base),
+                0b110 => format!("; NO {:04b}N", next_address_base),
+                0b111 => format!("; JMP {:04b}0", next_address_base),
+                _ => panic!("Invalid address control"),
+            }
+        };
+
+        // Determine flag storage
+        let change_flags = if self.should_store_flags() {
+            "; CHFL".to_string()
+        } else {
+            String::new()
+        };
+
+        format!("{}{}{}{}", output, result, address_control, change_flags)
+    }
 }
 
 #[cfg(test)]
@@ -190,5 +276,39 @@ mod tests {
     #[should_panic]
     fn from_invalid_string() {
         Instruction::new_from_string("00a0010010000010111000000").unwrap();
+    }
+
+    #[test]
+    fn to_string() {
+        let testcases = [
+            (0b00_00000_00_000_0000_00_00_0000_0, "TEST R0", Some(0)),
+            (0b00_00000_00_000_0000_00_00_0000_1, "TEST R0; CHFL", Some(0)),
+            (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC", Some(0)),
+            (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC; JMP 00000", None),
+            (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC; JMP 00000", Some(1)),
+            (0b00_00000_01_000_0000_01_10_0000_0, "R0 = (R0)", Some(0)),
+            (0b00_00000_11_001_0010_00_00_0001_0, "(R1) = R2", Some(0)),
+            (0b00_00000_11_001_0011_01_01_0001_0, "(R1), R1 = 3", Some(0)),
+            (0b01_00010_00_000_0000_00_00_0000_0, "TEST R0; JMP 00011", None),
+            (0b01_00101_00_000_0000_00_00_0000_0, "TEST R0; CF 0010C", None),
+            (0b10_00110_00_000_0000_00_00_0000_0, "TEST R0; CO 0011C", None),
+            (0b10_01001_00_000_0000_00_00_0000_0, "TEST R0; ZO 0100Z", None),
+            (0b11_01010_00_000_0000_00_00_0000_0, "TEST R0; NO 0101N", None),
+            (0b11_01101_00_000_0000_00_00_0000_0, "TEST R0; JMP 01100", None),
+            (0b00_00000_00_000_1111_01_01_0010_0, "R0 = R0 ⊽ FF", Some(0)),
+            (0b00_00000_00_010_0000_01_00_0011_0, "R2 = 0", Some(0)),
+            (0b00_00000_00_000_1111_01_01_0100_0, "R0 = R0 + FF", Some(0)),
+            (0b00_00000_00_000_1111_01_01_0101_0, "R0 = R0 + FF + 1", Some(0)),
+            (0b00_00000_00_000_1111_01_01_0110_0, "R0 = R0 + FF + C", Some(0)),
+            (0b00_00000_00_000_1111_01_01_0111_0, "R0 = R0 + FF + C̅", Some(0)),
+            (0b00_00000_00_000_1111_01_01_1000_0, "R0 = R0 >> 1", Some(0)),
+            (0b00_00000_00_000_1111_01_01_1001_0, "R0 = R0 ⤿> 1", Some(0)),
+            (0b00_00000_00_000_1111_01_01_1010_0, "R0 = R0 C> 1", Some(0)),
+            (0b00_00000_00_000_1111_01_01_1011_0, "R0 = R0 ?> 1", Some(0)),
+        ];
+
+        for &(i, s, na) in testcases.iter() {
+            assert_eq!(Instruction::new(i).unwrap().to_text_paraphrase(na), s.to_string());
+        }
     }
 }
