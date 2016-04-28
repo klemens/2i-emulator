@@ -3,4 +3,12 @@ name = "2i-emulator"
 version = "0.3.0"
 authors = ["Klemens Schölhorn <klemens@schoelhorn.eu>"]
 
+[lib]
+name = "emulator"
+path = "src/emulator/lib.rs"
+
+[[bin]]
+name = "2i-emulator-cli"
+path = "src/cli/main.rs"
+
 [dependencies]

@@ -1,4 +1,4 @@
-mod emulator;
+extern crate emulator;
 
 fn main() {
     println!("12 + 33 = {}", emulator::alu::Alu::calculate(4, 12, 33, false).0);

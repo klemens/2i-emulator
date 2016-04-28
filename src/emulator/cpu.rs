@@ -117,9 +117,9 @@ impl Cpu {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::emulator::alu::Flags;
-    use ::emulator::bus::IoRegisters;
-    use ::emulator::instruction::Instruction;
+    use alu::Flags;
+    use bus::IoRegisters;
+    use instruction::Instruction;
 
     #[test]
     fn address_calculation() {
