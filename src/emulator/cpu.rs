@@ -3,7 +3,7 @@
 //! This module contains the cpu used in the 2i.
 
 use super::{Error, Result};
-use super::alu::Flags;
+use super::alu::{Alu, Flags};
 use super::bus::Bus;
 use super::instruction::Instruction;
 
@@ -25,12 +25,9 @@ impl Cpu {
         }
     }
 
-    /// Execute the given instruction on the cpu using the given alu, bus,
+    /// Execute the given instruction on the cpu using the given, bus,
     /// input and output. Returns the address of the next instruction.
-    pub fn execute_instruction<A, B>(&mut self, inst: Instruction, alu: A,
-        bus: &mut B) -> Result<u8>
-        where A: Fn(u8, u8, u8, bool) -> (u8, Flags),
-              B: Bus {
+    pub fn execute_instruction<B: Bus>(&mut self, inst: Instruction, bus: &mut B) -> Result<u8> {
         let a;
         let b;
 
@@ -55,7 +52,8 @@ impl Cpu {
         }
 
         // Calculate result using alu
-        let (result, flags) = alu(inst.get_alu_instruction(), a, b, self.flag_register.carry());
+        let (result, flags) = Alu::calculate(inst.get_alu_instruction(), a, b,
+            self.flag_register.carry());
 
         // Write result to registers
         if inst.should_write_register() {
@@ -119,7 +117,7 @@ impl Cpu {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::emulator::alu::{calculate, Flags};
+    use ::emulator::alu::Flags;
     use ::emulator::bus::IoRegisters;
     use ::emulator::instruction::Instruction;
 
@@ -190,7 +188,7 @@ mod tests {
             for _ in 0..steps {
                 let inst = program[next_instruction_address];
                 next_instruction_address = cpu.execute_instruction(inst,
-                    calculate, &mut bus).unwrap() as usize;
+                    &mut bus).unwrap() as usize;
             }
 
             bus.inspect_output()[0]
