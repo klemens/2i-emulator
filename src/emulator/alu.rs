@@ -10,90 +10,43 @@ impl Alu {
     ///
     /// Returns the result and the resulting flags. Higher instructions than
     /// 1111 == 15 will result in a panic.
-    pub fn calculate(instruction: u8, a: u8, b: u8, mut carry: bool) -> (u8, Flags) {
-        let f; // result
-
-        match instruction {
-            0b0000 => { // f = a
-                f = a;
-                carry = false;
-            }
-            0b0001 => { // f = b
-                f = b;
-                carry = false;
-            }
-            0b0010 => { // f = a NOR b
-                f = ! (a | b);
-                carry = false;
-            }
-            0b0011 => { // f = 0
-                f = 0;
-                carry = false;
-            }
-            0b0100 => { // f = a + b
-                let tmp = a.overflowing_add(b);
-                f = tmp.0;
-                carry = tmp.1;
-            }
-            0b0101 => { // f = a + b + 1, inverted carry
+    pub fn calculate(instruction: u8, a: u8, b: u8, carry: bool) -> (u8, Flags) {
+        let (result, carry) = match instruction {
+            0b0000 => (a, false),
+            0b0001 => (b, false),
+            0b0010 => (!(a | b), false),
+            0b0011 => (0, false),
+            0b0100 => a.overflowing_add(b),
+            0b0101 => { // inverted carry
                 let tmp1 = a.overflowing_add(b);
                 let tmp2 = tmp1.0.overflowing_add(1);
-                f = tmp2.0;
-                carry = ! (tmp1.1 | tmp2.1);
+                (tmp2.0, !(tmp1.1 | tmp2.1))
             }
-            0b0110 => { // f = a + b + carry
+            0b0110 => {
                 let tmp1 = a.overflowing_add(b);
                 let tmp2 = tmp1.0.overflowing_add(if carry {1} else {0});
-                f = tmp2.0;
-                carry = tmp1.1 | tmp2.1;
+                (tmp2.0, tmp1.1 | tmp2.1)
             }
-            0b0111 => { // f = a + b + !carry, carry inverted
+            0b0111 => { // inverted carry
                 let tmp1 = a.overflowing_add(b);
                 let tmp2 = tmp1.0.overflowing_add(if carry {0} else {1});
-                f = tmp2.0;
-                carry = ! (tmp1.1 | tmp2.1);
+                (tmp2.0, !(tmp1.1 | tmp2.1))
             }
-            0b1000 => { // f = a >> 1, carry = a[0] (bit shifted out)
-                f = a >> 1;
-                carry = a & 0b00000001 != 0;
-            }
-            0b1001 => { // f = a >>(rotate) 1, carry = a[0] (bit shifted out)
-                f = a.rotate_right(1);
-                carry = a & 0b00000001 != 0;
-            }
-            0b1010 => { // f = a >> 1, f[7] = carry, carry = a[0] (bit shifted out)
-                f = a >> 1 | (carry as u8) << 7;
-                carry = a & 0b00000001 != 0;
-            }
-            0b1011 => { // f = a >> 1, f[7] = a[7], carry = a[0] (bit shifted out)
-                f = a >> 1 | (a & 0b10000000);
-                carry = a & 0b00000001 != 0;
-            }
-            0b1100 => { // f = 0, clear carry
-                f = 0;
-                carry = false;
-            }
-            0b1101 => { // f = 0, set carry
-                f = 0;
-                carry = true;
-            }
-            0b1110 => { // f = 0, let carry
-                f = 0;
-                carry = carry;
-            }
-            0b1111 => { // f = 0, invert carry
-                f = 0;
-                carry = ! carry;
-            }
-            _ => {
-                panic!("Invalid instruction {}", instruction);
-            }
-        }
+            0b1000 => (a >> 1, a & 0b00000001 != 0),
+            0b1001 => (a.rotate_right(1), a & 0b00000001 != 0),
+            0b1010 => (a >> 1 | (carry as u8) << 7, a & 0b00000001 != 0),
+            0b1011 => (a >> 1 | (a & 0b10000000), a & 0b00000001 != 0),
+            0b1100 => (0, false),
+            0b1101 => (0, true),
+            0b1110 => (0, carry),
+            0b1111 => (0, !carry),
+            _ => panic!("Invalid alu instruction {}", instruction),
+        };
 
-        let negative = f & 0b10000000 != 0; // two's complement
-        let zero = f == 0;
+        let negative = result & 0b10000000 != 0; // two's complement
+        let zero = result == 0;
 
-        return (f, Flags::new(carry, negative, zero));
+        return (result, Flags::new(carry, negative, zero));
     }
 }
 
@@ -224,7 +177,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Invalid instruction")]
+    #[should_panic(expected = "Invalid alu instruction")]
     fn invalid_instruction() {
         Alu::calculate(0b10000, 0, 0, false);
     }
