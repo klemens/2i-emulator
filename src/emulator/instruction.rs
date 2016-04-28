@@ -120,7 +120,7 @@ impl Instruction {
         return ((self.instruction & (mask as u32) << position) >> position) as u8;
     }
 
-    fn to_text_paraphrase(&self, next_address: Option<u8>) -> String {
+    pub fn to_text_paraphrase(&self, next_address: Option<u8>) -> String {
         // Determine input a
         let a = if self.is_alu_input_a_bus() {
             format!("(R{})", self.get_register_address_a())
