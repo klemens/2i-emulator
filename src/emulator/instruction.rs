@@ -1,5 +1,7 @@
 //! The 2i instruction
 
+use std::fmt;
+
 use super::{Error, Result};
 
 /// Instruction of the 2i.
@@ -204,6 +206,12 @@ impl Instruction {
         };
 
         format!("{}{}{}{}", output, result, address_control, change_flags)
+    }
+}
+
+impl fmt::Debug for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Instruction {{ {:025b} }}", self.instruction)
     }
 }
 
