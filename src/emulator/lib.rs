@@ -6,6 +6,11 @@ pub mod bus;
 pub mod cpu;
 pub mod instruction;
 
+// Re-exports
+pub use cpu::Cpu;
+pub use instruction::Instruction;
+pub use bus::{IoRegisters, Ram};
+
 #[derive(Debug)]
 pub enum Error {
     Bus(&'static str),
