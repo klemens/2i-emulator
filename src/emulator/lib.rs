@@ -5,6 +5,7 @@ pub mod alu;
 pub mod bus;
 pub mod cpu;
 pub mod instruction;
+pub mod parse;
 
 // Re-exports
 pub use cpu::Cpu;
@@ -16,6 +17,7 @@ pub enum Error {
     Bus(&'static str),
     Cpu(&'static str),
     Instruction(&'static str),
+    Parse(&'static str),
 }
 
 impl fmt::Display for Error {
@@ -24,6 +26,7 @@ impl fmt::Display for Error {
             &Error::Bus(s) => write!(f, "Bus error: {}", s),
             &Error::Cpu(s) => write!(f, "Cpu error: {}", s),
             &Error::Instruction(s) => write!(f, "Instruction error: {}", s),
+            &Error::Parse(s) => write!(f, "Parse error: {}", s),
         }
     }
 }
