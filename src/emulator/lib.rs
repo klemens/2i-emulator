@@ -8,6 +8,7 @@ pub mod instruction;
 pub mod parse;
 
 // Re-exports
+pub use alu::Flags;
 pub use cpu::Cpu;
 pub use instruction::Instruction;
 pub use bus::{Bus, IoRegisters, Ram};
