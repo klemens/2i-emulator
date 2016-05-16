@@ -27,7 +27,7 @@ impl Cpu {
 
     /// Execute the given instruction on the cpu using the given, bus,
     /// input and output. Returns the address of the next instruction.
-    pub fn execute_instruction<B: Bus>(&mut self, inst: Instruction, bus: &mut B) -> Result<u8> {
+    pub fn execute_instruction<B: Bus>(&mut self, inst: Instruction, bus: &mut B) -> Result<usize> {
         let a;
         let b;
 
@@ -75,7 +75,7 @@ impl Cpu {
         }
 
         // Calculate and return the next instruction address
-        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.carry()))
+        Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.carry()) as usize)
     }
 
     /// Direct access to the registers.
@@ -198,7 +198,7 @@ mod tests {
             for _ in 0..steps {
                 let inst = program[next_instruction_address];
                 next_instruction_address = cpu.execute_instruction(inst,
-                    &mut bus).unwrap() as usize;
+                    &mut bus).unwrap();
             }
 
             // The return is necessary because of the following issue:

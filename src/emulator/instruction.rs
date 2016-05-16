@@ -122,7 +122,7 @@ impl Instruction {
         return ((self.instruction & (mask as u32) << position) >> position) as u8;
     }
 
-    pub fn to_text_paraphrase(&self, next_address: Option<u8>) -> String {
+    pub fn to_text_paraphrase(&self, next_address: Option<usize>) -> String {
         // Determine input a
         let a = if self.is_alu_input_a_bus() {
             format!("(R{})", self.get_register_address_a())
@@ -180,7 +180,7 @@ impl Instruction {
 
         // Determine address control and next address
         let address_control = if self.get_address_control() == 0 &&
-            next_address == Some(self.get_next_instruction_address()) {
+            next_address == Some(self.get_next_instruction_address() as usize) {
             String::new()
         } else {
             let next_address = self.get_next_instruction_address();
