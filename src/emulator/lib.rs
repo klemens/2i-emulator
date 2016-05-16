@@ -10,7 +10,7 @@ pub mod parse;
 // Re-exports
 pub use cpu::Cpu;
 pub use instruction::Instruction;
-pub use bus::{IoRegisters, Ram};
+pub use bus::{Bus, IoRegisters, Ram};
 
 #[derive(Debug)]
 pub enum Error {
