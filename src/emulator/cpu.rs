@@ -78,6 +78,16 @@ impl Cpu {
         Ok(Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.carry()))
     }
 
+    /// Direct access to the registers.
+    pub fn inspect_registers(&mut self) -> &mut [u8; 8] {
+        &mut self.registers
+    }
+
+    /// Direct access to the flag register.
+    pub fn inspect_flags(&mut self) -> &mut Flags {
+        &mut self.flag_register
+    }
+
     /// Calculate the next instruction address based on the current instruction
     /// and the flags.
     fn calculate_next_instruction_address(inst: Instruction, flags: Flags,
