@@ -28,28 +28,25 @@ impl Cpu {
     /// Execute the given instruction on the cpu using the given, bus,
     /// input and output. Returns the address of the next instruction.
     pub fn execute_instruction<B: Bus>(&mut self, inst: Instruction, bus: &mut B) -> Result<(usize, Flags)> {
-        let a;
-        let b;
-
         // Determine alu input a (bus or register)
-        if inst.is_alu_input_a_bus() {
+        let a = if inst.is_alu_input_a_bus() {
             if ! inst.is_bus_enabled() {
                 return Err(Error::Cpu("Cannot read from disabled bus"));
             } else if inst.is_bus_writable() {
                 return Err(Error::Cpu("Cannot read from bus while it is in write mode"));
             }
 
-            a = try!(bus.read(self.registers[inst.get_register_address_a()]));
+            try!(bus.read(self.registers[inst.get_register_address_a()]))
         } else {
-            a = self.registers[inst.get_register_address_a()];
-        }
+            self.registers[inst.get_register_address_a()]
+        };
 
         // Determine alu input b (constant or register)
-        if inst.is_alu_input_b_const() {
-            b = inst.get_constant_input();
+        let b = if inst.is_alu_input_b_const() {
+            inst.get_constant_input()
         } else {
-            b = self.registers[inst.get_register_address_b()];
-        }
+            self.registers[inst.get_register_address_b()]
+        };
 
         // Calculate result using alu
         let (result, flags) = Alu::calculate(inst.get_alu_instruction(), a, b,
