@@ -1,6 +1,7 @@
 extern crate emulator;
 
 use std::fs::File;
+use std::io::{self, BufRead, Write};
 
 use emulator::*;
 
@@ -9,7 +10,32 @@ fn main() {
 
     let program = parse::read_program(File::open(file_name).unwrap()).unwrap();
 
-    println!("{:#?}", program);
+    let mut next_address = 0;
+    let mut cpu = Cpu::new();
+
+    let io = IoRegisters::new();
+    let mut ram = Ram::new();
+    ram.add_overlay(0xFC, 0xFF, &io);
+
+    println!("2i-emulator v{}", option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
+    display_ui(&mut cpu, &io, next_address, program[next_address], None);
+
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        // TODO: handle inputs
+
+        // Run next instruction and display the updated ui
+        match cpu.execute_instruction(program[next_address], &mut ram) {
+            Ok((na, flags)) => {
+                next_address = na;
+                display_ui(&mut cpu, &io, na, program[na], Some(flags));
+            }
+            Err(err) => {
+                println!("Fehler beim Ausführen des Befehls: \"{}\"", err);
+                return;
+            }
+        }
+    }
 }
 
 /// Display the status UI of the cli
@@ -45,7 +71,7 @@ Register:        Eingaberegister:   Letzte Flags, Flag-Register:
         cf = flag_register.carry() as u8,
         nf = flag_register.negative() as u8,
         zf = flag_register.zero() as u8);
-    io::stdout().flush();
+    io::stdout().flush().unwrap();
 }
 
 /// Format the given instruction as a logically grouped "binary" string
