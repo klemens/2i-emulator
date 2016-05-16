@@ -12,3 +12,4 @@ name = "2i-emulator-cli"
 path = "src/cli/main.rs"
 
 [dependencies]
+regex = "0.1"

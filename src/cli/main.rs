@@ -1,18 +1,22 @@
 extern crate emulator;
+extern crate regex;
 
 use std::fs::File;
 use std::io::{self, BufRead, Write};
 
 use emulator::*;
+use regex::Regex;
 
 fn main() {
     let file_name = std::env::args().skip(1).next().unwrap();
 
     let program = parse::read_program(File::open(file_name).unwrap()).unwrap();
 
+    // eg: FD = 1101
+    let input_pattern = Regex::new(r"^(?P<index>F[C-F])\s+=\s+(?P<value>[01]{1,8})$").unwrap();
+
     let mut next_address = 0;
     let mut cpu = Cpu::new();
-
     let io = IoRegisters::new();
     let mut ram = Ram::new();
     ram.add_overlay(0xFC, 0xFF, &io);
@@ -22,9 +26,35 @@ fn main() {
 
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
-        // TODO: handle inputs
+        let line = line.unwrap();
 
-        // Run next instruction and display the updated ui
+        if line.is_empty() {
+            // execute next instruction
+        } else if let Some(matches) = input_pattern.captures(line.trim()) {
+            if let Ok(value) = u8::from_str_radix(&matches["value"], 2) {
+                let mut input = io.inspect_input().borrow_mut();
+                match &matches["index"] {
+                    "FC" => input[0] = value,
+                    "FD" => input[1] = value,
+                    "FE" => input[2] = value,
+                    "FF" => input[3] = value,
+                    _ => panic!("Invalid regex match"),
+                }
+                print!("> ");
+                io::stdout().flush().unwrap();
+                continue;
+            } else {
+                print!("Ungültiger Wert.\n> ");
+                io::stdout().flush().unwrap();
+                continue;
+            }
+        } else {
+            print!("Ungültige Eingabe.\n> ");
+            io::stdout().flush().unwrap();
+            continue;
+        }
+
+        // Execute next instruction and display the updated ui
         match cpu.execute_instruction(program[next_address], &mut ram) {
             Ok((na, flags)) => {
                 next_address = na;
