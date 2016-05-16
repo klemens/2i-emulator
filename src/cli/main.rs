@@ -11,9 +11,34 @@ use readline::readline;
 use regex::Regex;
 
 fn main() {
-    let file_name = std::env::args().skip(1).next().unwrap();
-
-    let program = parse::read_program(File::open(file_name).unwrap()).unwrap();
+    // Load the program from the filename given as the first cli parameter
+    let program = if let Some(file_name) = std::env::args().skip(1).next() {
+        if let Ok(file) = File::open(file_name) {
+            match parse::read_program(file) {
+                Ok(program) => program,
+                Err(err) => {
+                    println!("Fehler beim Laden des Programms: {}", err);
+                    return;
+                }
+            }
+        } else {
+            println!("Die angegebene Datei konnte nicht geöffnet werden.");
+            return;
+        }
+    } else {
+        println!("Es wurde kein Programm zum Laden angegeben. Bitte geben Sie \
+                  den Dateinamen eines Programmes als Kommandozeilenparameter \
+                  an.\n\nEin Programm besteht aus einer Textdatei mit einem \
+                  Befehl pro Zeile. Leere Zeilen und solche, die mit einem # \
+                  beginnen, werden ignoriert. Alle Zeichen außer 0 und 1 \
+                  werden innerhalb eines Befehls ignoriert und können zur \
+                  Formatierung verwendet werden. Befehlen kann optional ihre \
+                  Adresse vorangestellt werden. Beispiel:\n\n\
+                  # R0 = (FC)\n\
+                  \n       00,00001 00 000|1100 01 01,0001 0\n\
+                  00001: 00,00000 01 000|0000 01 10,0000 0");
+        return;
+    };
 
     // eg: FD = 1101
     let input_pattern = Regex::new(r"^(?P<index>F[C-F])\s+=\s+(?P<value>[01]{1,8})$").unwrap();
