@@ -1,10 +1,13 @@
 extern crate emulator;
+extern crate readline;
 extern crate regex;
 
+use std::ffi::CString;
 use std::fs::File;
-use std::io::{self, BufRead, Write};
+use std::io::{self, Write};
 
 use emulator::*;
+use readline::readline;
 use regex::Regex;
 
 fn main() {
@@ -21,49 +24,48 @@ fn main() {
     let mut ram = Ram::new();
     ram.add_overlay(0xFC, 0xFF, &io);
 
-    println!("2i-emulator v{}", option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
-    display_ui(&mut cpu, &io, next_address, program[next_address], None);
+    // Simple macro to ease the calling of the display_ui function
+    macro_rules! display_ui {
+        ($e:expr) => {
+            display_ui(&mut cpu, &io, next_address, program[next_address], $e)
+        }
+    };
 
-    let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        let line = line.unwrap();
+    println!("2i-emulator v{}", option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
+    display_ui!(None);
+
+    let prompt = CString::new("> ").unwrap();
+    while let Ok(line) = readline(&prompt) {
+        let line = line.to_string_lossy();
 
         if line.is_empty() {
-            // execute next instruction
+            // Execute next instruction and display the updated ui
+            match cpu.execute_instruction(program[next_address], &mut ram) {
+                Ok((na, flags)) => {
+                    next_address = na;
+                    display_ui!(Some(flags));
+                }
+                Err(err) => {
+                    println!("Fehler beim Ausführen des Befehls: \"{}\"", err);
+                    return;
+                }
+            }
         } else if let Some(matches) = input_pattern.captures(line.trim()) {
+            // Try to set one of the input registers
             if let Ok(value) = u8::from_str_radix(&matches["value"], 2) {
-                let mut input = io.inspect_input().borrow_mut();
                 match &matches["index"] {
-                    "FC" => input[0] = value,
-                    "FD" => input[1] = value,
-                    "FE" => input[2] = value,
-                    "FF" => input[3] = value,
+                    "FC" => io.inspect_input().borrow_mut()[0] = value,
+                    "FD" => io.inspect_input().borrow_mut()[1] = value,
+                    "FE" => io.inspect_input().borrow_mut()[2] = value,
+                    "FF" => io.inspect_input().borrow_mut()[3] = value,
                     _ => panic!("Invalid regex match"),
                 }
-                print!("> ");
-                io::stdout().flush().unwrap();
-                continue;
+                display_ui!(None);
             } else {
-                print!("Ungültiger Wert.\n> ");
-                io::stdout().flush().unwrap();
-                continue;
+                println!("Ungültiger Wert.");
             }
         } else {
-            print!("Ungültige Eingabe.\n> ");
-            io::stdout().flush().unwrap();
-            continue;
-        }
-
-        // Execute next instruction and display the updated ui
-        match cpu.execute_instruction(program[next_address], &mut ram) {
-            Ok((na, flags)) => {
-                next_address = na;
-                display_ui(&mut cpu, &io, na, program[na], Some(flags));
-            }
-            Err(err) => {
-                println!("Fehler beim Ausführen des Befehls: \"{}\"", err);
-                return;
-            }
+            println!("Ungültige Eingabe.");
         }
     }
 }
@@ -87,7 +89,7 @@ Register:        Eingaberegister:   Letzte Flags, Flag-Register:
   R6: {6:08b }     FE: {12:08b}     [FC = 11010]: Eingaberegister ändern
   R7: {7:08b }     FF: {13:08b}     [ENTER]: Befehl ausführen
 
-> ",
+",
         reg[0], reg[1], reg[2], reg[3],
         reg[4], reg[5], reg[6], reg[7],
         input[0], input[1], input[2], input[3],

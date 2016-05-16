@@ -12,4 +12,5 @@ name = "2i-emulator-cli"
 path = "src/cli/main.rs"
 
 [dependencies]
+readline = { git = "https://github.com/FredericHeihoff/readline.git", rev = "cc22dad" }
 regex = "0.1"
