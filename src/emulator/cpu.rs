@@ -183,7 +183,7 @@ mod tests {
             let mut cpu = Cpu::new();
             let mut bus = IoRegisters::new();
 
-            bus.inspect_input()[0..2].clone_from_slice(&[a, b]);
+            bus.inspect_input().borrow_mut()[0..2].clone_from_slice(&[a, b]);
 
             for _ in 0..steps {
                 let inst = program[next_instruction_address];
@@ -191,7 +191,9 @@ mod tests {
                     &mut bus).unwrap() as usize;
             }
 
-            bus.inspect_output()[0]
+            // The return is necessary because of the following issue:
+            // https://github.com/rust-lang/rust/issues/31439
+            return bus.inspect_output().borrow()[0];
         };
 
         // Special cases

@@ -11,29 +11,29 @@ use std::cell::RefCell;
 /// Represents an interface of the 2i bus with 8 bit data and addressing.
 pub trait Bus {
     fn read(&self, address: u8) -> Result<u8>;
-    fn write(&mut self, address: u8, value: u8) -> Result<()>;
+    fn write(&self, address: u8, value: u8) -> Result<()>;
 }
 
 /// Ram of the 2i.
 ///
 /// Represents the 8 bit ram of the 2i.
 pub struct Ram<'a> {
-    memory: [u8; 256],
-    overlays: Vec<(u8, u8, &'a RefCell<Box<Bus>>)>,
+    memory: RefCell<[u8; 256]>,
+    overlays: Vec<(u8, u8, &'a Bus)>,
 }
 
 impl<'a> Ram<'a> {
     /// Create a new ram with all addresses initialised to zero.
     pub fn new() -> Ram<'a> {
         Ram {
-            memory: [0; 256],
+            memory: RefCell::new([0; 256]),
             overlays: Vec::new(),
         }
     }
 
-    /// Access the underlying store as a slice.
-    pub fn inspect(&mut self) -> &mut [u8; 256] {
-        &mut self.memory
+    /// Direct access to the ram wrapped in a RefCell.
+    pub fn inspect(&self) -> &RefCell<[u8; 256]> {
+        &self.memory
     }
 
     /// Add a bus as an overlay to the ram.
@@ -42,7 +42,7 @@ impl<'a> Ram<'a> {
     /// is forwarded to the given bus. All overlays are checked in the order
     /// they were added.
     pub fn add_overlay(&mut self, first_address: u8, last_address: u8,
-        overlay_bus: &'a RefCell<Box<Bus>>) {
+        overlay_bus: &'a Bus) {
         self.overlays.push((first_address, last_address, overlay_bus));
     }
 }
@@ -51,20 +51,20 @@ impl<'a> Bus for Ram<'a> {
     fn read(&self, address: u8) -> Result<u8> {
         for &(first_address, last_address, bus) in self.overlays.iter() {
             if address >= first_address && address <= last_address {
-                return bus.borrow().read(address);
+                return bus.read(address);
             }
         }
 
-        Ok(self.memory[address as usize])
+        Ok(self.memory.borrow()[address as usize])
     }
-    fn write(&mut self, address: u8, value: u8) -> Result<()> {
+    fn write(&self, address: u8, value: u8) -> Result<()> {
         for &(first_address, last_address, bus) in self.overlays.iter() {
             if address >= first_address && address <= last_address {
-                return bus.borrow_mut().write(address, value);
+                return bus.write(address, value);
             }
         }
 
-        self.memory[address as usize] = value;
+        self.memory.borrow_mut()[address as usize] = value;
         Ok(())
     }
 }
@@ -75,41 +75,41 @@ impl<'a> Bus for Ram<'a> {
 /// address lower than FC or writing to an address lower than FE will result
 /// in an error.
 pub struct IoRegisters {
-    input: [u8; 4],
-    output: [u8; 2],
+    input: RefCell<[u8; 4]>,
+    output: RefCell<[u8; 2]>,
 }
 
 impl IoRegisters {
     /// Create a new IoRegisters with all registers initialised to zero.
     pub fn new() -> IoRegisters {
         IoRegisters {
-            input: [0; 4],
-            output: [0; 2],
+            input: RefCell::new([0; 4]),
+            output: RefCell::new([0; 2]),
         }
     }
 
-    /// Access the input registers as a slice.
-    pub fn inspect_input(&mut self) -> &mut [u8; 4] {
-        &mut self.input
+    /// Direct access to the input registers wrapped in a RefCell.
+    pub fn inspect_input(&self) -> &RefCell<[u8; 4]> {
+        &self.input
     }
 
-    /// Access the output registers as a slice.
-    pub fn inspect_output(&mut self) -> &mut [u8; 2] {
-        &mut self.output
+    /// Direct access to the output registers wrapped in a RefCell.
+    pub fn inspect_output(&self) -> &RefCell<[u8; 2]> {
+        &self.output
     }
 }
 
 impl Bus for IoRegisters {
     fn read(&self, address: u8) -> Result<u8> {
         if address >= 0xFC {
-            Ok(self.input[(address - 0xFC) as usize])
+            Ok(self.input.borrow()[(address - 0xFC) as usize])
         } else {
             Err(Error::Bus("Only supports reading from input registers"))
         }
     }
-    fn write(&mut self, address: u8, value: u8) -> Result<()> {
+    fn write(&self, address: u8, value: u8) -> Result<()> {
         if address >= 0xFE {
-            self.output[(address - 0xFE) as usize] = value;
+            self.output.borrow_mut()[(address - 0xFE) as usize] = value;
             Ok(())
         } else if address >= 0xFC {
             Err(Error::Bus("Cannot write to input register"))
@@ -122,11 +122,10 @@ impl Bus for IoRegisters {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::cell::RefCell;
 
     #[test]
     fn read_write_memory() {
-        let mut ram = Ram::new();
+        let ram = Ram::new();
 
         ram.write(0, 42).unwrap();
         ram.write(1, 43).unwrap();
@@ -150,7 +149,7 @@ mod tests {
         // We have to declare the overlay first, because otherwise it does not
         // outlive the base and we cannot pass a reference to add_overlay.
         // The order doesn't matter if both are declared inside a struct.
-        let overlay: RefCell<Box<Bus>> = RefCell::new(Box::new(Ram::new()));
+        let overlay = Ram::new();
         let mut base = Ram::new();
 
         base.add_overlay(2, 3, &overlay);
@@ -167,20 +166,20 @@ mod tests {
         assert_eq!(base.read(3).unwrap(), 45);
         assert_eq!(base.read(4).unwrap(), 46);
 
-        assert_eq!(overlay.borrow().read(0).unwrap(), 0);
-        assert_eq!(overlay.borrow().read(1).unwrap(), 0);
-        assert_eq!(overlay.borrow().read(2).unwrap(), 44);
-        assert_eq!(overlay.borrow().read(3).unwrap(), 45);
-        assert_eq!(overlay.borrow().read(4).unwrap(), 0);
+        assert_eq!(overlay.read(0).unwrap(), 0);
+        assert_eq!(overlay.read(1).unwrap(), 0);
+        assert_eq!(overlay.read(2).unwrap(), 44);
+        assert_eq!(overlay.read(3).unwrap(), 45);
+        assert_eq!(overlay.read(4).unwrap(), 0);
 
-        assert_eq!(base.inspect()[0..5], [42, 43, 0, 0, 46]);
+        assert_eq!(base.inspect().borrow()[0..5], [42, 43, 0, 0, 46]);
     }
 
     #[test]
     fn io_register() {
-        let mut io = IoRegisters::new();
+        let io = IoRegisters::new();
 
-        io.inspect_input().clone_from_slice(&[42, 43, 44, 45]);
+        io.inspect_input().borrow_mut().clone_from_slice(&[42, 43, 44, 45]);
         assert_eq!(io.read(0xFC).unwrap(), 42);
         assert_eq!(io.read(0xFD).unwrap(), 43);
         assert_eq!(io.read(0xFE).unwrap(), 44);
@@ -188,7 +187,7 @@ mod tests {
 
         io.write(0xFE, 46).unwrap();
         io.write(0xFF, 47).unwrap();
-        assert_eq!(io.inspect_output(), &[46, 47]);
+        assert_eq!(io.inspect_output().borrow()[..], [46, 47]);
         assert_eq!(io.read(0xFE).unwrap(), 44);
         assert_eq!(io.read(0xFF).unwrap(), 45);
 
