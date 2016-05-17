@@ -1,32 +1,56 @@
-# 2iEmulator #
+# 2iEmulator
 
-This is an emulator for the micro copmuter used in the hardware practicum of the
-computer science study in University of Leipzig.
+Emulator for the micro computer used in the computer science hardware course
+at Leipzig University.
 
-## Build ##
+## Build
 
-The provided Makefile works with g++ under both linux and windows.
-To build the unit tests, build the target __unit__.
+The project can be built using `cargo`. You can also use one of the [binaries]
+provided for convenience.
 
-## Usage ##
+```sh
+cargo build --release
+```
 
-The program provides a mostly self-explaining console interface.
+## Usage
 
-When the program asks for the first instruction, you can also enter a filename
-which contains one instustion per line in ascii. (see examples)
+You have to run the emulator in a terminal and specify the filename of the
+program you want to run as a parameter:
 
-## Documentation ##
+```sh
+target/release/2i-emulator-cli doc/examples/answer.2i
+```
 
-In doc you'll find a german documentation describing the micro computer and its
-instructions. The header files also include some basic information.
+## Example
 
-## Examples ##
+The following example (`answer.2i`) calculates the number `42` and writes it
+to the output register `FE`.
 
-doc/examples contains two example programs: 
+```
+# The answer to everything: (FE) = 42
 
-1. __add2__: Reads two numbers from FC and FD and writes (FC + FD) * 2 into FF.
-2. __mul.txt__: Reads two numbers from FC and FD and writes FC * DF into FE.
+00000: 00 00001 | 00 | 000 0101 01 | 01 0001 0
+00001: 11 00010 | 00 | 000 0000 01 | 00 0100 0
+00010: 00 00001 | 00 | 000 0000 01 | 00 0101 0
+00011: 00 00100 | 00 | 000 0000 01 | 00 1000 0
+00100: 00 00101 | 00 | 000 0000 01 | 00 1000 0
+00101: 00 00110 | 00 | 001 1110 01 | 01 0001 0
+00110: 00 00000 | 11 | 001 0000 00 | 00 0001 0
+```
 
-## Licence ##
+Any character but `0` and `1` is ignored inside commands and can be used for
+formatting. Every command can optionally be prefixed with its address. Empty
+lines and ones that start with `#` are ignored.
 
-This program by Klemens Schölhorn is licenced under GPLv3.
+## Documentation
+
+The doc folder contains a german documentation of the micro computer and its
+instructions. The [api documentation] of the emulator can be generated using
+`cargo doc`.
+
+## Licence
+
+This program by Klemens Schölhorn is licenced under the terms of the GPLv3.
+
+[binaries]: https://github.com/klemens/2iEmulator/releases
+[api documentation]: https://klemens.github.io/2iEmulator/emulator/
