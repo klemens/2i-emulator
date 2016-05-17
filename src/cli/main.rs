@@ -62,6 +62,7 @@ fn main() {
     let prompt = CString::new("> ").unwrap();
     while let Ok(line) = readline(&prompt) {
         let line = line.to_string_lossy();
+        let line = line.trim();
 
         if line.is_empty() {
             // Execute next instruction and display the updated ui
@@ -75,7 +76,7 @@ fn main() {
                     return;
                 }
             }
-        } else if let Some(matches) = input_pattern.captures(line.trim()) {
+        } else if let Some(matches) = input_pattern.captures(line) {
             // Try to set one of the input registers
             if let Ok(value) = u8::from_str_radix(&matches["value"], 2) {
                 match &matches["index"] {
