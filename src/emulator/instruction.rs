@@ -122,6 +122,19 @@ impl Instruction {
         return ((self.instruction & (mask as u32) << position) >> position) as u8;
     }
 
+    /// Create a textual representation of the instruction
+    ///
+    /// Optionally, the address of the next instruction after this one can be
+    /// passed to simplify the resulting string in many cases.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use emulator::Instruction;
+    ///
+    /// let inst = Instruction::new(0b00_00000_00_000_0110_01_01_0100_0).unwrap();
+    /// assert_eq!("R0 = R0 + 6", &inst.to_text_paraphrase(Some(0)));
+    /// ```
     pub fn to_text_paraphrase(&self, next_address: Option<usize>) -> String {
         // Determine input a
         let a = if self.is_alu_input_a_bus() {

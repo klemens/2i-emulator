@@ -1,3 +1,9 @@
+//! This crate implements an emulator for the *Minirechner 2i*
+//!
+//! The *Minirechner 2i* is a simple 8 bit micro computer that can be
+//! programmed using microcode and is used in the computer science hardware
+//! course at Leipzig University.
+
 use std::fmt;
 use std::result;
 

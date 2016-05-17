@@ -11,6 +11,21 @@ use super::instruction::Instruction;
 ///
 /// Represents the 8 bit cpu of the 2i with 8 registers that are 8 bit wide and
 /// the three status registers (carry, negative, zero).
+///
+/// # Examples:
+///
+/// ```
+/// use emulator::{Cpu, Instruction, Ram};
+///
+/// let mut cpu = Cpu::new();
+/// let mut ram = Ram::new();
+///
+/// // R0 = 6
+/// let inst = Instruction::new(0b00_00000_00_000_0110_01_01_0001_0).unwrap();
+///
+/// let _ = cpu.execute_instruction(inst, &mut ram);
+/// assert_eq!(6, cpu.inspect_registers()[0]);
+/// ```
 pub struct Cpu {
     registers: [u8; 8],
     flag_register: Flags,
@@ -25,8 +40,8 @@ impl Cpu {
         }
     }
 
-    /// Execute the given instruction on the cpu using the given, bus,
-    /// input and output. Returns the address of the next instruction.
+    /// Execute the given instruction on the cpu using the given, bus, input
+    /// and output. Returns the address of the next instruction and the alu flags.
     pub fn execute_instruction<B: Bus>(&mut self, inst: Instruction, bus: &mut B) -> Result<(usize, Flags)> {
         // Determine alu input a (bus or register)
         let a = if inst.is_alu_input_a_bus() {

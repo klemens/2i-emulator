@@ -13,11 +13,11 @@ use super::instruction::Instruction;
 /// Ignores empty lines and lines that start with `#`. You can use any char
 /// other than `0` and `1` to format your program for improved readability.
 ///
-/// Instructions can optionally be given an explicit address by prefixing it
+/// Instructions can optionally be given an explicit address by prefixing them
 /// with the binary representation of the address. Instructions without an
-/// address are saved at the first unused address.
+/// explicit address are saved at the first unused address.
 ///
-/// # Example program
+/// # Examples
 ///
 /// ```text
 /// # Read value from FC into register 0
