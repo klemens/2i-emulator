@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Instruction` struct in crate `emulator`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Instruction">
+
+    <title>emulator::instruction::Instruction - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>emulator</a>::<wbr><a href='index.html'>instruction</a></p><script>window.sidebarCurrent = {name: 'Instruction', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>emulator</a>::<wbr><a href='index.html'>instruction</a>::<wbr><a class='struct' href=''>Instruction</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-187' class='srclink' href='../../src/emulator/src/emulator/instruction.rs.html#12-14' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Instruction {
+    // some fields omitted
+}</pre><div class='docblock'><p>Instruction of the 2i.</p>
+
+<p>Represents a 25 bit wide instruction that the 2i uses. Provides some
+conveniance methods to extract all different parts.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(instruction: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a>&gt;</code></h4>
+<div class='docblock'><p>Create a new Instruction from a u32. Fails if more than 25 bits
+are used.</p>
+</div><h4 id='method.new_from_string' class='method'><code>fn <a href='#method.new_from_string' class='fnname'>new_from_string</a>(string: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a>&gt;</code></h4>
+<div class='docblock'><p>Creat a new Instruction from a binary string (consisting only of ones
+and zeroes). Failes if more than 25 bits (characters) are used.</p>
+</div><h4 id='method.get_instruction' class='method'><code>fn <a href='#method.get_instruction' class='fnname'>get_instruction</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a></code></h4>
+<div class='docblock'><p>Get the instruction as a 25 bit integer (the first 7 most significant
+bits of the u32 are always zero)</p>
+</div><h4 id='method.should_store_flags' class='method'><code>fn <a href='#method.should_store_flags' class='fnname'>should_store_flags</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>MCHFLG</p>
+</div><h4 id='method.get_alu_instruction' class='method'><code>fn <a href='#method.get_alu_instruction' class='fnname'>get_alu_instruction</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a></code></h4>
+<div class='docblock'><p>MALUS0-3 (4 bit)</p>
+</div><h4 id='method.is_alu_input_b_const' class='method'><code>fn <a href='#method.is_alu_input_b_const' class='fnname'>is_alu_input_b_const</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>MALUIB</p>
+</div><h4 id='method.is_alu_input_a_bus' class='method'><code>fn <a href='#method.is_alu_input_a_bus' class='fnname'>is_alu_input_a_bus</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>MALUIA</p>
+</div><h4 id='method.should_write_register' class='method'><code>fn <a href='#method.should_write_register' class='fnname'>should_write_register</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>MRGWE</p>
+</div><h4 id='method.should_write_register_b' class='method'><code>fn <a href='#method.should_write_register_b' class='fnname'>should_write_register_b</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>MRGWS</p>
+</div><h4 id='method.get_register_address_b' class='method'><code>fn <a href='#method.get_register_address_b' class='fnname'>get_register_address_b</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>MRGAB0-2 (3 bit)</p>
+</div><h4 id='method.get_constant_input' class='method'><code>fn <a href='#method.get_constant_input' class='fnname'>get_constant_input</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a></code></h4>
+<div class='docblock'><p>MRGAB0-3 (4 bit)</p>
+</div><h4 id='method.get_register_address_a' class='method'><code>fn <a href='#method.get_register_address_a' class='fnname'>get_register_address_a</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>MRGAA0-2 (3 bit)</p>
+</div><h4 id='method.is_bus_enabled' class='method'><code>fn <a href='#method.is_bus_enabled' class='fnname'>is_bus_enabled</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>BUSEN</p>
+</div><h4 id='method.is_bus_writable' class='method'><code>fn <a href='#method.is_bus_writable' class='fnname'>is_bus_writable</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>BUSWR</p>
+</div><h4 id='method.get_next_instruction_address' class='method'><code>fn <a href='#method.get_next_instruction_address' class='fnname'>get_next_instruction_address</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a></code></h4>
+<div class='docblock'><p>NA0-4 (5 bit)</p>
+</div><h4 id='method.get_address_control' class='method'><code>fn <a href='#method.get_address_control' class='fnname'>get_address_control</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a></code></h4>
+<div class='docblock'><p>MAC0-1 (2 bit)</p>
+</div><h4 id='method.to_text_paraphrase' class='method'><code>fn <a href='#method.to_text_paraphrase' class='fnname'>to_text_paraphrase</a>(&amp;self, next_address: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+<div class='docblock'><p>Create a textual representation of the instruction</p>
+
+<p>Optionally, the address of the next instruction after this one can be
+passed to simplify the resulting string in many cases.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>emulator</span>::<span class='ident'>Instruction</span>;
+
+<span class='kw'>let</span> <span class='ident'>inst</span> <span class='op'>=</span> <span class='ident'>Instruction</span>::<span class='ident'>new</span>(<span class='number'>0b00_00000_00_000_0110_01_01_0100_0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;R0 = R0 + 6&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>inst</span>.<span class='ident'>to_text_paraphrase</span>(<span class='prelude-val'>Some</span>(<span class='number'>0</span>)));</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a></code></h4>
+<h4 id='method.clone_from' class='method'><span class="since">1.0.0</span><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> for <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a></code></h3><div class='impl-items'></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "emulator";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

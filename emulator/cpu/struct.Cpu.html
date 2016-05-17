@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Cpu` struct in crate `emulator`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Cpu">
+
+    <title>emulator::cpu::Cpu - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>emulator</a>::<wbr><a href='index.html'>cpu</a></p><script>window.sidebarCurrent = {name: 'Cpu', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>emulator</a>::<wbr><a href='index.html'>cpu</a>::<wbr><a class='struct' href=''>Cpu</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-154' class='srclink' href='../../src/emulator/src/emulator/cpu.rs.html#29-32' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Cpu {
+    // some fields omitted
+}</pre><div class='docblock'><p>Cpu of the 2i.</p>
+
+<p>Represents the 8 bit cpu of the 2i with 8 registers that are 8 bit wide and
+the three status registers (carry, negative, zero).</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples:</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>emulator</span>::{<span class='ident'>Cpu</span>, <span class='ident'>Instruction</span>, <span class='ident'>Ram</span>};
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cpu</span> <span class='op'>=</span> <span class='ident'>Cpu</span>::<span class='ident'>new</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>ram</span> <span class='op'>=</span> <span class='ident'>Ram</span>::<span class='ident'>new</span>();
+
+<span class='comment'>// R0 = 6</span>
+<span class='kw'>let</span> <span class='ident'>inst</span> <span class='op'>=</span> <span class='ident'>Instruction</span>::<span class='ident'>new</span>(<span class='number'>0b00_00000_00_000_0110_01_01_0001_0</span>).<span class='ident'>unwrap</span>();
+
+<span class='kw'>let</span> _ <span class='op'>=</span> <span class='ident'>cpu</span>.<span class='ident'>execute_instruction</span>(<span class='ident'>inst</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ram</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>6</span>, <span class='ident'>cpu</span>.<span class='ident'>inspect_registers</span>()[<span class='number'>0</span>]);</pre>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></h4>
+<div class='docblock'><p>Create a new cpu with all registers and flags set to zero.</p>
+</div><h4 id='method.execute_instruction' class='method'><code>fn <a href='#method.execute_instruction' class='fnname'>execute_instruction</a>&lt;B: <a class='trait' href='../../emulator/bus/trait.Bus.html' title='emulator::bus::Bus'>Bus</a>&gt;(&amp;mut self, inst: <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a>, bus: &amp;mut B) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></h4>
+<div class='docblock'><p>Execute the given instruction on the cpu using the given, bus, input
+and output. Returns the address of the next instruction and the alu flags.</p>
+</div><h4 id='method.inspect_registers' class='method'><code>fn <a href='#method.inspect_registers' class='fnname'>inspect_registers</a>(&amp;mut self) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 8]</a></code></h4>
+<div class='docblock'><p>Direct access to the registers.</p>
+</div><h4 id='method.inspect_flags' class='method'><code>fn <a href='#method.inspect_flags' class='fnname'>inspect_flags</a>(&amp;mut self) -&gt; &amp;mut <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a></code></h4>
+<div class='docblock'><p>Direct access to the flag register.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "emulator";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

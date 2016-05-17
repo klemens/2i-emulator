@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error",""]],"mod":[["alu","The 2i 8 bit alu."],["bus","The 2i bus."],["cpu","The 2i cpu."],["instruction","The 2i instruction"],["parse","Parse 2i programs."]],"type":[["Result",""]]});

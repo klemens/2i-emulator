@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Instruction","Instruction of the 2i."]]});
