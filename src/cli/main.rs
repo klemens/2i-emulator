@@ -1,13 +1,11 @@
 extern crate emulator;
-extern crate readline;
+extern crate linenoise;
 extern crate regex;
 
-use std::ffi::CString;
 use std::fs::File;
 use std::io::{self, Write};
 
 use emulator::*;
-use readline::readline;
 use regex::Regex;
 
 fn main() {
@@ -59,10 +57,13 @@ fn main() {
     println!("2i-emulator v{}", option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
     display_ui!(None);
 
-    let prompt = CString::new("> ").unwrap();
-    while let Ok(line) = readline(&prompt) {
-        let line = line.to_string_lossy();
+    while let Some(line) = linenoise::input("> ") {
         let line = line.trim();
+
+        // Add all non-empty inputs to the history
+        if ! line.is_empty() {
+            linenoise::history_add(&line);
+        }
 
         if line.is_empty() {
             // Execute next instruction and display the updated ui

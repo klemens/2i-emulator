@@ -12,5 +12,5 @@ name = "2i-emulator-cli"
 path = "src/cli/main.rs"
 
 [dependencies]
-readline = { git = "https://github.com/FredericHeihoff/readline.git", rev = "cc22dad" }
+linenoise-rust = "0.2.0"
 regex = "0.1"
