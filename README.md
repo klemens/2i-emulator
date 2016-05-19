@@ -3,6 +3,18 @@
 Cli emulator for the micro computer 2i used in the computer science hardware
 course at Leipzig University.
 
+```
+Register:        Eingaberegister:   Letzte Flags, Flag-Register:
+  R0: 00000010     FC: 00000101       Carry: 0, 0 | Negativ: 0, 0 | Null: 0, 0
+  R1: 00001100     FD: 00001100
+  R2: 00100100     FE: 00000000     Nächster Befehl (00110):
+  R3: 00000000     FF: 00000000       00 01000 | 00 | 000 1111 01 | 01 0100 | 0
+  R4: 00000000                        ~ R0 = R0 + FF; JMP 01000
+  R5: 00000000   Ausgaberegister:
+  R6: 00000000     FE: 00111100     [FC = 11010]: Eingaberegister setzen
+  R7: 00000000     FF: 00000000     [ENTER]: Nächsten Befehl ausführen
+```
+
 ## Build
 
 The project can be built using `cargo`. You can also use one of the [binaries]
