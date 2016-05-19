@@ -77,6 +77,8 @@ fn main() {
                     return;
                 }
             }
+        } else if line == "exit" || line == "quit" {
+            return;
         } else if line == "ram" {
             display_ram(&ram);
         } else if let Some(matches) = input_pattern.captures(line) {
