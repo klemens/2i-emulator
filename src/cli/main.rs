@@ -79,6 +79,8 @@ fn main() {
             }
         } else if line == "exit" || line == "quit" {
             return;
+        } else if line == "help" {
+            display_help();
         } else if line == "ram" {
             display_ram(&ram);
         } else if let Some(matches) = input_pattern.captures(line) {
@@ -96,7 +98,7 @@ fn main() {
                 println!("Ungültiger Wert.");
             }
         } else {
-            println!("Ungültige Eingabe.");
+            println!("Ungültige Eingabe. \"help\" für Hilfe.");
         }
     }
 }
@@ -117,8 +119,8 @@ Register:        Eingaberegister:   Letzte Flags, Flag-Register:
   R3: {3:08b }     FF: {11:08b}       {instruction}
   R4: {4:08b }                        ~ {mnemonic}
   R5: {5:08b }   Ausgaberegister:
-  R6: {6:08b }     FE: {12:08b}     [FC = 11010]: Eingaberegister ändern
-  R7: {7:08b }     FF: {13:08b}     [ENTER]: Befehl ausführen
+  R6: {6:08b }     FE: {12:08b}     [FC = 11010]: Eingaberegister setzen
+  R7: {7:08b }     FF: {13:08b}     [ENTER]: Nächsten Befehl ausführen
 
 ",
         reg[0], reg[1], reg[2], reg[3],
@@ -166,4 +168,14 @@ fn display_ram(ram: &Ram) {
     }
 
     println!("\n");
+}
+
+/// Display a list of all commands with descriptions
+fn display_help() {
+    println!("\n\
+        FX = <value>  Eingaberegister setzen (zB: FC = 11010)\n\
+        ENTER         Nächsten Befehl ausführen\n\
+        ram           RAM-Übersicht anzeigen\n\
+        help          Hilfe anzeigen\n\
+        exit/quit     Emulator beenden (alternativ: STRG-D)\n")
 }
