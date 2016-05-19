@@ -77,6 +77,8 @@ fn main() {
                     return;
                 }
             }
+        } else if line == "ram" {
+            display_ram(&ram);
         } else if let Some(matches) = input_pattern.captures(line) {
             // Try to set one of the input registers
             if let Ok(value) = u8::from_str_radix(&matches["value"], 2) {
@@ -148,4 +150,18 @@ fn format_instruction(inst: Instruction) -> String {
         inst.is_alu_input_b_const() as u8,
         inst.get_alu_instruction(),
         inst.should_store_flags() as u8)
+}
+
+/// Print a overview of the ram in common hex-editor format
+fn display_ram(ram: &Ram) {
+    println!("\n    _0 _1 _2 _3 _4 _5 _6 _7 _8 _9 _A _B _C _D _E _F");
+
+    for (i, cell) in ram.inspect().borrow()[0..252].iter().enumerate() {
+        if i % 16 == 0 {
+            print!("\n{:X}_ ", i / 16);
+        }
+        print!(" {:02X}", cell);
+    }
+
+    println!("\n");
 }
