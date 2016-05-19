@@ -57,6 +57,8 @@ fn main() {
     println!("2i-emulator v{}", option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
     display_ui!(None);
 
+    linenoise::set_callback(input_completion_callback);
+
     while let Some(line) = linenoise::input("> ") {
         let line = line.trim();
 
@@ -178,4 +180,27 @@ fn display_help() {
         ram           RAM-Übersicht anzeigen\n\
         help          Hilfe anzeigen\n\
         exit/quit     Emulator beenden (alternativ: STRG-D)\n")
+}
+
+/// Generate a list of possible command completions given a partial input
+fn input_completion_callback(input: &str) -> Vec<String> {
+    let commands = [
+        "exit",
+        "FC = ",
+        "FD = ",
+        "FE = ",
+        "FF = ",
+        "help",
+        "quit",
+        "ram",
+    ];
+
+    commands.iter().filter_map(|&command| {
+        // Only keep commands, for which the input is a real prefix
+        if command.starts_with(input) && command != input {
+            Some(command.into())
+        } else {
+            None
+        }
+    }).collect()
 }
