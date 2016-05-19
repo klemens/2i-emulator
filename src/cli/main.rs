@@ -54,7 +54,8 @@ fn main() {
         }
     };
 
-    println!("2i-emulator v{}", option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
+    println!("2i-emulator {}, GPLv3, https://github.com/klemens/2iEmulator",
+             option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
     display_ui!(None);
 
     linenoise::set_callback(input_completion_callback);
