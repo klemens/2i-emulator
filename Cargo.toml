@@ -8,7 +8,7 @@ name = "emulator"
 path = "src/emulator/lib.rs"
 
 [[bin]]
-name = "2i-emulator-cli"
+name = "2i-emulator"
 path = "src/cli/main.rs"
 
 [dependencies]

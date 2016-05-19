@@ -1,7 +1,7 @@
 # 2iEmulator
 
-Emulator for the micro computer used in the computer science hardware course
-at Leipzig University.
+Cli emulator for the micro computer 2i used in the computer science hardware
+course at Leipzig University.
 
 ## Build
 
@@ -18,7 +18,7 @@ You have to run the emulator in a terminal and specify the filename of the
 program you want to run as a parameter:
 
 ```sh
-target/release/2i-emulator-cli doc/examples/answer.2i
+target/release/2i-emulator doc/examples/answer.2i
 ```
 
 You can also associate `2i`-files directly with the emulator.
