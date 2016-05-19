@@ -1,4 +1,4 @@
-# 2iEmulator
+# 2i-emulator
 
 Cli emulator for the micro computer 2i used in the computer science hardware
 course at Leipzig University.

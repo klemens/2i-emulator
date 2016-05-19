@@ -54,7 +54,7 @@ fn main() {
         }
     };
 
-    println!("2i-emulator {}, GPLv3, https://github.com/klemens/2iEmulator",
+    println!("2i-emulator {}, GPLv3, https://github.com/klemens/2i-emulator",
              option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
     display_ui!(None);
 
