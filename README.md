@@ -21,6 +21,8 @@ program you want to run as a parameter:
 target/release/2i-emulator-cli doc/examples/answer.2i
 ```
 
+You can also associate `2i`-files directly with the emulator.
+
 ## Example
 
 The following example (`answer.2i`) calculates the number `42` and writes it
