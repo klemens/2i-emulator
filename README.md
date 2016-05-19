@@ -66,5 +66,5 @@ instructions. The [api documentation] of the emulator can be generated using
 
 This program by Klemens Schölhorn is licenced under the terms of the GPLv3.
 
-[binaries]: https://github.com/klemens/2iEmulator/releases
-[api documentation]: https://klemens.github.io/2iEmulator/emulator/
+[binaries]: https://github.com/klemens/2i-emulator/releases
+[api documentation]: https://klemens.github.io/2i-emulator/emulator/
