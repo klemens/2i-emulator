@@ -218,7 +218,12 @@ impl Instruction {
             String::new()
         };
 
-        format!("{}{}{}{}", output, result, address_control, change_flags)
+        if self.instruction & 0b1100000111111111111111110 == 0 {
+            // NOP if everything except NA and CHFL is zero
+            format!("NOP{}{}", address_control, change_flags)
+        } else {
+            format!("{}{}{}{}", output, result, address_control, change_flags)
+        }
     }
 }
 
@@ -302,8 +307,10 @@ mod tests {
     #[test]
     fn to_string() {
         let testcases = [
-            (0b00_00000_00_000_0000_00_00_0000_0, "TEST R0", Some(0)),
-            (0b00_00000_00_000_0000_00_00_0000_1, "TEST R0; CHFL", Some(0)),
+            (0b00_00000_00_000_0000_00_00_0000_0, "NOP", Some(0)),
+            (0b00_00000_00_000_0000_00_00_0000_0, "NOP; JMP 00000", None),
+            (0b00_00000_00_000_0000_00_00_0001_0, "TEST R0", Some(0)),
+            (0b00_00000_00_000_0000_00_00_0000_1, "NOP; CHFL", Some(0)),
             (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC", Some(0)),
             (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC; JMP 00000", None),
             (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC; JMP 00000", Some(1)),
