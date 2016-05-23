@@ -1,6 +1,6 @@
 [package]
 name = "2i-emulator"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Klemens Schölhorn <klemens@schoelhorn.eu>"]
 
 [lib]
