@@ -185,7 +185,7 @@ impl Instruction {
         };
         let output = if self.is_bus_enabled() && self.is_bus_writable() {
             if self.should_write_register() {
-                format!("(R{}), {} = ", self.get_register_address_a(), format_register())
+                format!("(R{}),{} = ", self.get_register_address_a(), format_register())
             } else {
                 format!("(R{}) = ", self.get_register_address_a())
             }
@@ -320,7 +320,7 @@ mod tests {
             (0b00_00000_00_000_1100_01_01_0001_0, "R0 = FC; JMP 00000", Some(1)),
             (0b00_00000_01_000_0000_01_10_0000_0, "R0 = (R0)", Some(0)),
             (0b00_00000_11_001_0010_00_00_0001_0, "(R1) = R2", Some(0)),
-            (0b00_00000_11_001_0011_01_01_0001_0, "(R1), R1 = 3", Some(0)),
+            (0b00_00000_11_001_0011_01_01_0001_0, "(R1),R1 = 3", Some(0)),
             (0b01_00010_00_000_0000_00_00_0000_0, "TEST R0; JMP 00011", None),
             (0b01_00101_00_000_0000_00_00_0000_0, "TEST R0; CF 0010C", None),
             (0b10_00110_00_000_0000_00_00_0000_0, "TEST R0; CO 0011C", None),
