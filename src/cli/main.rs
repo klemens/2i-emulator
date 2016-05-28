@@ -39,7 +39,7 @@ fn main() {
     };
 
     // eg: FD = 1101
-    let input_pattern = Regex::new(r"^(?P<index>F[C-F])\s+=\s+(?P<value>[01]{1,8})$").unwrap();
+    let input_pattern = Regex::new(r"^(?P<index>F[C-F])\s+=\s+((?P<binvalue>[01]{1,8})|(?P<decvalue>[0-9]{1,3})d|0x(?P<hexvalue>[0-9a-fA-F]{1,2}))$").unwrap();
 
     let mut next_address = 0;
     let mut cpu = Cpu::new();
@@ -87,8 +87,31 @@ fn main() {
         } else if line == "ram" {
             display_ram(&ram);
         } else if let Some(matches) = input_pattern.captures(line) {
+            let mut value_str = "";
+            let mut base = 0;
+            match matches.name("binvalue") {
+                Some(value) => {
+                    value_str = value;
+                    base = 2;
+                },
+                None => {},
+            }
+            match matches.name("decvalue") {
+                Some(value) => {
+                    value_str = value;
+                    base = 10;
+                },
+                None => {},
+            }
+            match matches.name("hexvalue") {
+                Some(value) => {
+                    value_str = value;
+                    base = 16;
+                },
+                None => {},
+            }
             // Try to set one of the input registers
-            if let Ok(value) = u8::from_str_radix(&matches["value"], 2) {
+            if let Ok(value) = u8::from_str_radix(value_str, base) {
                 match &matches["index"] {
                     "FC" => io.inspect_input().borrow_mut()[0] = value,
                     "FD" => io.inspect_input().borrow_mut()[1] = value,
