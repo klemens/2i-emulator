@@ -1,6 +1,6 @@
 extern crate emulator;
-extern crate linenoise;
 extern crate regex;
+extern crate rustyline;
 
 use std::fs::File;
 use std::io::{self, Write};
@@ -58,14 +58,19 @@ fn main() {
              option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
     display_ui!(None);
 
-    linenoise::set_callback(input_completion_callback);
+    let config = rustyline::Config::builder()
+        .completion_type(rustyline::CompletionType::List)
+        .build();
+    let completer = Completer{};
+    let mut line_reader = rustyline::Editor::with_config(config);
+    line_reader.set_completer(Some(&completer));
 
-    while let Some(line) = linenoise::input("> ") {
+    while let Ok(line) = line_reader.readline("> ") {
         let line = line.trim();
 
         // Add all non-empty inputs to the history
         if ! line.is_empty() {
-            linenoise::history_add(&line);
+            line_reader.add_history_entry(line.as_ref());
         }
 
         if line.is_empty() {
@@ -183,25 +188,35 @@ fn display_help() {
         exit/quit     Emulator beenden (alternativ: STRG-D)\n")
 }
 
-/// Generate a list of possible command completions given a partial input
-fn input_completion_callback(input: &str) -> Vec<String> {
-    let commands = [
-        "exit",
-        "FC = ",
-        "FD = ",
-        "FE = ",
-        "FF = ",
-        "help",
-        "quit",
-        "ram",
-    ];
+struct Completer {}
 
-    commands.iter().filter_map(|&command| {
-        // Only keep commands, for which the input is a real prefix
-        if command.starts_with(input) && command != input {
-            Some(command.into())
-        } else {
-            None
+impl rustyline::completion::Completer for Completer {
+    fn complete(&self, line: &str, pos: usize) -> rustyline::Result<(usize, Vec<String>)> {
+        // only complete at the end
+        if pos < line.len() {
+            return Ok((0, vec![]));
         }
-    }).collect()
+
+        let commands = [
+            "exit",
+            "FC = ",
+            "FD = ",
+            "FE = ",
+            "FF = ",
+            "help",
+            "quit",
+            "ram",
+        ];
+
+        let completions = commands.iter().filter_map(|&command| {
+            // Only keep commands, for which the input is a real prefix
+            if command.starts_with(line) && command != line {
+                Some(command.into())
+            } else {
+                None
+            }
+        }).collect();
+
+        Ok((0, completions))
+    }
 }

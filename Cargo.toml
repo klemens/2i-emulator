@@ -12,5 +12,5 @@ name = "2i-emulator"
 path = "src/cli/main.rs"
 
 [dependencies]
-linenoise-rust = "0.2.0"
+rustyline = { git = "https://github.com/kkawakam/rustyline.git", rev = "ec773db5224e" }
 regex = "0.1"
