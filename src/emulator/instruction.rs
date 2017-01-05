@@ -152,8 +152,9 @@ impl Instruction {
 
         // Determine alu function
         let result = match self.get_alu_instruction() {
-            0b0000 => a,
-            0b0001 => b,
+            0b0000 if a == b => format!("{} << 1; HLDC", a),
+            0b0000 => format!("{} + {}; HLDC", a, b),
+            0b0001 => a,
             0b0010 if a == b => format!("¬{}", a),
             0b0010 => format!("{} NOR {}", a, b),
             0b0011 => "0".to_string(),
@@ -169,10 +170,10 @@ impl Instruction {
             0b1001 => format!("{} R> 1", a),
             0b1010 => format!("{} C> 1", a),
             0b1011 => format!("{} ?> 1", a),
-            0b1100 => "0".to_string(),
-            0b1101 => "0".to_string(),
-            0b1110 => "0".to_string(),
-            0b1111 => "0".to_string(),
+            0b1100 => b,
+            0b1101 => format!("{}; SETC", b),
+            0b1110 => format!("{}; HLDC", b),
+            0b1111 => format!("{}; INVC", b),
             i => panic!("Invalid instruction {}", i),
         };
 
