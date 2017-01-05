@@ -22,8 +22,8 @@ use super::instruction::Instruction;
 /// ```text
 /// # Read value from FC into register 0
 ///
-///        00,00001 00 000|1100 01 01,0001 0
-/// 00001: 00,00000 01 000|0000 01 10,0000 0
+///        00,00001 00 000|1100 01 01,1100 0
+/// 00001: 00,00000 01 000|0000 01 10,0001 0
 /// ```
 pub fn read_program<R: Read>(reader: R) -> Result<[Instruction; 32]> {
     let instructions = parse_instructions(reader)?;
