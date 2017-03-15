@@ -26,6 +26,7 @@ use super::instruction::Instruction;
 /// let _ = cpu.execute_instruction(inst, &mut ram);
 /// assert_eq!(6, cpu.inspect_registers()[0]);
 /// ```
+#[derive(Default)]
 pub struct Cpu {
     registers: [u8; 8],
     flag_register: Flags,
@@ -34,10 +35,7 @@ pub struct Cpu {
 impl Cpu {
     /// Create a new cpu with all registers and flags set to zero.
     pub fn new() -> Cpu {
-        Cpu {
-            registers: [0; 8],
-            flag_register: Flags::default(),
-        }
+        Cpu::default()
     }
 
     /// Execute the given instruction on the cpu using the given, bus, input

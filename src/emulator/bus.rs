@@ -25,10 +25,7 @@ pub struct Ram<'a> {
 impl<'a> Ram<'a> {
     /// Create a new ram with all addresses initialised to zero.
     pub fn new() -> Ram<'a> {
-        Ram {
-            memory: RefCell::new([0; 256]),
-            overlays: Vec::new(),
-        }
+        Ram::default()
     }
 
     /// Direct access to the ram wrapped in a RefCell.
@@ -44,6 +41,15 @@ impl<'a> Ram<'a> {
     pub fn add_overlay(&mut self, first_address: u8, last_address: u8,
         overlay_bus: &'a Bus) {
         self.overlays.push((first_address, last_address, overlay_bus));
+    }
+}
+
+impl<'a> Default for Ram<'a> {
+    fn default() -> Ram<'a> {
+        Ram {
+            memory: RefCell::new([0; 256]),
+            overlays: Default::default(),
+        }
     }
 }
 
@@ -74,6 +80,7 @@ impl<'a> Bus for Ram<'a> {
 /// Represents the input and output registers of the 2i. Reading from an
 /// address lower than FC or writing to an address lower than FE will result
 /// in an error.
+#[derive(Default)]
 pub struct IoRegisters {
     input: RefCell<[u8; 4]>,
     output: RefCell<[u8; 2]>,
@@ -82,10 +89,7 @@ pub struct IoRegisters {
 impl IoRegisters {
     /// Create a new IoRegisters with all registers initialised to zero.
     pub fn new() -> IoRegisters {
-        IoRegisters {
-            input: RefCell::new([0; 4]),
-            output: RefCell::new([0; 2]),
-        }
+        IoRegisters::default()
     }
 
     /// Direct access to the input registers wrapped in a RefCell.

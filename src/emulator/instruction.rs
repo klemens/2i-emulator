@@ -8,7 +8,7 @@ use super::{Error, Result};
 ///
 /// Represents a 25 bit wide instruction that the 2i uses. Provides some
 /// conveniance methods to extract all different parts.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Instruction {
     instruction: u32,
 }
