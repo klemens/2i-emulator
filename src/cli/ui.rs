@@ -6,15 +6,23 @@ use emulator::{Flags, Instruction, IoRegisters, Ram};
 use super::*;
 
 /// Display the status UI of the cli
-pub fn status(computer: &mut Computer, io: &IoRegisters, program: &Program,
-              flags: Option<Flags>) {
+pub fn status(computer: &mut Computer, io: &IoRegisters,
+              program: &Option<Program>, flags: Option<Flags>) {
     let flag_register = computer.cpu.inspect_flags().clone();
     let reg = computer.cpu.inspect_registers();
     let input = io.inspect_input().borrow();
     let output = io.inspect_output().borrow();
-    let next_instruction = program.instructions[computer.instruction_pointer];
 
-    let path = ellipsize_path(&program.path, 41);
+    let (path, instruction, mnemonic) = if let &Some(ref program) = program {
+        let inst = program.instructions[computer.instruction_pointer];
+        (
+            ellipsize_path(&program.path, 41),
+            format_instruction(inst),
+            inst.to_text_paraphrase(Some(computer.instruction_pointer + 1)),
+        )
+    } else {
+        ("-".into(), "-".into(), "".into())
+    };
 
     print!("
 Register:        Eingaberegister:   Aktuelles Mikroprogramm:
@@ -33,8 +41,8 @@ Register:        Eingaberegister:   Aktuelles Mikroprogramm:
         input[0], input[1], input[2], input[3],
         output[0], output[1],
         program_path = path,
-        instruction = format_instruction(next_instruction),
-        mnemonic = next_instruction.to_text_paraphrase(Some(computer.instruction_pointer + 1)),
+        instruction = instruction,
+        mnemonic = mnemonic,
         ip = computer.instruction_pointer,
         co = flags.map_or("-".into(), |f| format!("{}", f.carry() as u8)),
         no = flags.map_or("-".into(), |f| format!("{}", f.negative() as u8)),

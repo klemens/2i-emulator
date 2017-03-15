@@ -15,7 +15,7 @@ fn main() {
         let path = PathBuf::from(file_name);
         if let Ok(file) = File::open(&path) {
             match emulator::parse::read_program(file) {
-                Ok(program) => Program { path: path, instructions: program },
+                Ok(program) => Program { path: path, instructions: program }.into(),
                 Err(err) => {
                     println!("Fehler beim Laden des Programms: {}", err);
                     return;
@@ -26,18 +26,7 @@ fn main() {
             return;
         }
     } else {
-        println!("Es wurde kein Programm zum Laden angegeben. Bitte geben Sie \
-                  den Dateinamen eines Programmes als Kommandozeilenparameter \
-                  an.\n\nEin Programm besteht aus einer Textdatei mit einem \
-                  Befehl pro Zeile. Leere Zeilen und solche, die mit einem # \
-                  beginnen, werden ignoriert. Alle Zeichen außer 0 und 1 \
-                  werden innerhalb eines Befehls ignoriert und können zur \
-                  Formatierung verwendet werden. Befehlen kann optional ihre \
-                  Adresse vorangestellt werden. Beispiel:\n\n\
-                  # R0 = (FC)\n\
-                  \n       00,00001 00 000|1100 01 01,0001 0\n\
-                  00001: 00,00000 01 000|0000 01 10,0000 0");
-        return;
+        None
     };
 
     let io = emulator::IoRegisters::new();
@@ -66,13 +55,19 @@ fn main() {
         }
 
         if line.is_empty() {
-            // Execute next instruction and display the updated ui
-            match computer.step(&program) {
-                Ok(flags) => ui::status(&mut computer, &io, &program, Some(flags)),
-                Err(err) => {
-                    println!("Fehler beim Ausführen des Befehls: \"{}\"", err);
-                    return;
+            if let Some(ref program_inner) = program {
+                // Execute next instruction and display the updated ui
+                match computer.step(&program_inner) {
+                    Ok(flags) => {
+                        ui::status(&mut computer, &io, &program, Some(flags));
+                    }
+                    Err(err) => {
+                        println!("Fehler beim Ausführen des Befehls: \"{}\"", err);
+                        return;
+                    }
                 }
+            } else {
+                println!("Fehler: Kein Mikroprogramm geladen! (Laden per \"load prog.2i\")");
             }
         } else if line == "exit" || line == "quit" {
             return;
