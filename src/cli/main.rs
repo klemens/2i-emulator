@@ -2,16 +2,21 @@ extern crate emulator;
 extern crate regex;
 extern crate rustyline;
 
+use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
+use std::path::{Path, PathBuf};
 
 use emulator::*;
 use regex::Regex;
 
 fn main() {
+    let program_path;
+
     // Load the program from the filename given as the first cli parameter
     let program = if let Some(file_name) = std::env::args().skip(1).next() {
-        if let Ok(file) = File::open(file_name) {
+        program_path = Some(file_name.into());
+        if let Ok(file) = File::open(program_path.as_ref().unwrap()) {
             match parse::read_program(file) {
                 Ok(program) => program,
                 Err(err) => {
@@ -50,7 +55,8 @@ fn main() {
     // Simple macro to ease the calling of the display_ui function
     macro_rules! display_ui {
         ($e:expr) => {
-            display_ui(&mut cpu, &io, next_address, program[next_address], $e)
+            display_ui(&mut cpu, &io, next_address, program[next_address],
+                &program_path, $e)
         }
     };
 
@@ -113,28 +119,36 @@ fn main() {
 
 /// Display the status UI of the cli
 fn display_ui(cpu: &mut Cpu, io: &IoRegisters, next_instruction_address: usize,
-              next_instruction: Instruction, flags: Option<Flags>) {
+              next_instruction: Instruction, program_path: &Option<PathBuf>,
+              flags: Option<Flags>) {
     let flag_register = cpu.inspect_flags().clone();
     let reg = cpu.inspect_registers();
     let input = io.inspect_input().borrow();
     let output = io.inspect_output().borrow();
 
+    let path = if let &Some(ref path) = program_path {
+        ellipsize_path(path, 41)
+    } else {
+        "-".into()
+    };
+
     print!("
-Register:        Eingaberegister:   Letzte Flags, Flag-Register:
-  R0: {0:08b }     FC: {8:08b }       Carry: {co}, {cf} | Negativ: {no}, {nf} | Null: {zo}, {zf}
+Register:        Eingaberegister:   Aktuelles Mikroprogramm:
+  R0: {0:08b }     FC: {8:08b }       {program_path}
   R1: {1:08b }     FD: {9:08b }
   R2: {2:08b }     FE: {10:08b}     Nächster Befehl ({na:05b}):
   R3: {3:08b }     FF: {11:08b}       {instruction}
   R4: {4:08b }                        ~ {mnemonic}
   R5: {5:08b }   Ausgaberegister:
-  R6: {6:08b }     FE: {12:08b}     [FC = 11010]: Eingaberegister setzen
-  R7: {7:08b }     FF: {13:08b}     [ENTER]: Nächsten Befehl ausführen
+  R6: {6:08b }     FE: {12:08b}     Letzte Flags, Flag-Register:
+  R7: {7:08b }     FF: {13:08b}       Carry: {co}, {cf} | Negativ: {no}, {nf} | Null: {zo}, {zf}
 
 ",
         reg[0], reg[1], reg[2], reg[3],
         reg[4], reg[5], reg[6], reg[7],
         input[0], input[1], input[2], input[3],
         output[0], output[1],
+        program_path = path,
         instruction = format_instruction(next_instruction),
         mnemonic = next_instruction.to_text_paraphrase(Some(next_instruction_address + 1)),
         na = next_instruction_address,
@@ -145,6 +159,20 @@ Register:        Eingaberegister:   Letzte Flags, Flag-Register:
         nf = flag_register.negative() as u8,
         zf = flag_register.zero() as u8);
     io::stdout().flush().unwrap();
+}
+
+/// Ellipsize path if necessary
+fn ellipsize_path(path: &Path, max_length: usize) -> Cow<str> {
+    assert!(max_length >= 4);
+
+    let path_string = path.to_string_lossy();
+    // This only works for ascii-like strings
+    if path_string.chars().count() > max_length {
+        let rev_short: String = path_string.chars().rev().take(max_length - 3).collect();
+        "...".chars().chain(rev_short.chars().rev()).collect()
+    } else {
+        path_string
+    }
 }
 
 /// Format the given instruction as a logically grouped "binary" string
