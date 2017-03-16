@@ -26,11 +26,18 @@ cargo build --release
 
 ## Usage
 
-You have to run the emulator in a terminal and specify the filename of the
-program you want to run as a parameter:
+You can specify the filename of the program you want to load as a parameter on
+the command line:
 
 ```sh
 target/release/2i-emulator doc/examples/answer.2i
+```
+
+Or use the built-in `load` command:
+
+```sh
+target/release/2i-emulator
+> load doc/examples/answer.2i
 ```
 
 You can also associate `2i`-files directly with the emulator.

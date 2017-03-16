@@ -1,3 +1,4 @@
+extern crate cmdline_parser;
 extern crate emulator;
 extern crate regex;
 extern crate rustyline;
@@ -5,26 +6,14 @@ extern crate rustyline;
 mod ui;
 
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use regex::Regex;
 
 fn main() {
     // Load the program from the filename given as the first cli parameter
-    let program = if let Some(file_name) = std::env::args().skip(1).next() {
-        let path = PathBuf::from(file_name);
-        if let Ok(file) = File::open(&path) {
-            match emulator::parse::read_program(file) {
-                Ok(program) => Program { path: path, instructions: program }.into(),
-                Err(err) => {
-                    println!("Fehler beim Laden des Programms: {}", err);
-                    return;
-                }
-            }
-        } else {
-            println!("Die angegebene Datei konnte nicht geöffnet werden.");
-            return;
-        }
+    let mut program = if let Some(file_name) = std::env::args().skip(1).next() {
+        load_programm(&Path::new(&file_name)).ok()
     } else {
         None
     };
@@ -69,6 +58,15 @@ fn main() {
             } else {
                 println!("Fehler: Kein Mikroprogramm geladen! (Laden per \"load prog.2i\")");
             }
+        } else if line.starts_with("load ") {
+            let path = cmdline_parser::parse_single(&line[5..].trim());
+
+            if let Ok(prog) = load_programm(Path::new(&path)) {
+                program = Some(prog);
+                // Reset computer (only keep io registers)
+                computer = Computer::new(&io);
+                ui::status(&mut computer, &io, &program, None);
+            }
         } else if line == "exit" || line == "quit" {
             return;
         } else if line == "help" {
@@ -92,6 +90,22 @@ fn main() {
         } else {
             println!("Ungültige Eingabe. \"help\" für Hilfe.");
         }
+    }
+}
+
+/// Load 2i program from path and print errors to stdout if it failes
+fn load_programm(path: &Path) -> Result<Program, ()> {
+    if let Ok(file) = File::open(&path) {
+        match emulator::parse::read_program(file) {
+            Ok(program) => Ok(Program { path: path.into(), instructions: program }),
+            Err(err) => {
+                println!("Fehler beim Laden des Programms: {}", err);
+                Err(())
+            }
+        }
+    } else {
+        println!("Die angegebene Datei konnte nicht geöffnet werden.");
+        Err(())
     }
 }
 
@@ -135,6 +149,7 @@ impl rustyline::completion::Completer for Completer {
 
         let commands = [
             "exit",
+            "load ",
             "FC = ",
             "FD = ",
             "FE = ",

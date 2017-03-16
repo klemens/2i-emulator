@@ -103,6 +103,7 @@ pub fn display_help() {
     println!("\n\
         FX = <value>  Eingaberegister setzen (zB: FC = 11010)\n\
         ENTER         Nächsten Befehl ausführen\n\
+        load <path>   Neues Mikroprogramm laden (CPU wird zurückgesetzt)\n\
         ram           RAM-Übersicht anzeigen\n\
         help          Hilfe anzeigen\n\
         exit/quit     Emulator beenden (alternativ: STRG-D)\n")
