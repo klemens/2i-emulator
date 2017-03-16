@@ -1,0 +1,79 @@
+\documentclass[landscape,10pt]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{multicol}
+\usepackage{multirow}
+
+\geometry{left=1cm, right=1cm, top=1cm, bottom=1cm}
+
+% Based on the solution by Antonia Siegert
+\newenvironment {progTable}{%
+    \tabularx{\textwidth}{|c||X||c||c||c||c|c||c|c|c|c||c|c|c||c|}
+    \hline
+
+    \multirow{4}{*}{\small Adr}
+    &\multirow{4}{*}{\small Pseudocode}
+    &\multirow{4}{*}{\footnotesize Adresse}
+    &\multicolumn{2}{@{}c@{}||}{Steuerung}
+    &\multicolumn{2}{c||}{Bus}
+    &\multicolumn{4}{c||}{Register}
+    &\multicolumn{3}{c||}{ALU}
+    &{\footnotesize Flags}
+    \\
+
+    &&
+    &\multirow{2}{*}{\footnotesize MAC}
+    &\multirow{2}{*}{\footnotesize NA}
+    &\multirow{2}{0.7cm}{\footnotesize \centering BUS\\WR}
+    &\multirow{2}{0.7cm}{\footnotesize \centering BUS\\EN}
+    &\multirow{2}{0.8cm}{\footnotesize \centering MRG\\AA}
+    &\multirow{2}{0.8cm}{\footnotesize \centering MRG\\AB}
+    &\multirow{2}{0.8cm}{\footnotesize \centering MRG\\WS}
+    &\multirow{2}{0.8cm}{\footnotesize \centering MRG\\WE}
+    &\multirow{2}{1.1cm}{\footnotesize \centering MALU\\IA}
+    &\multirow{2}{1.1cm}{\footnotesize \centering MALU\\IB}
+    &\multirow{2}{*}{\footnotesize MALUS}
+    &\multirow{2}{0.7cm}{\footnotesize\centering MCH\\FLG}
+    \\
+
+    &&&&&&&&&&&&&&\\\cline{4-15}
+
+    &&
+    &{\footnotesize 24...23}
+    &{\footnotesize 22...18}
+    &{\footnotesize 17}
+    &{\footnotesize 16}
+    &{\footnotesize 15...13}
+    &{\footnotesize 12...9}
+    &{\footnotesize 8}
+    &{\footnotesize 7}
+    &{\footnotesize 6}
+    &{\footnotesize 5}
+    &{\footnotesize 4...1}
+    &{\footnotesize 0}
+    \\
+
+    \hline
+}{%
+    \endtabularx
+}
+
+
+\begin{document}
+
+\noindent
+\textbf{Hardwarepraktikum \the\year: Minirechner 2i} \hfill \today\\
+#author#
+\vspace{1em}
+
+\noindent
+\begin{progTable}#split#\end{progTable}
+
+\noindent
+\begin{progTable}#split#\end{progTable}
+
+\end{document}
