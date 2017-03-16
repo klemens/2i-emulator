@@ -1,3 +1,4 @@
+extern crate chrono;
 #[macro_use]
 extern crate clap;
 extern crate cmdline_parser;
@@ -5,6 +6,7 @@ extern crate emulator;
 extern crate regex;
 extern crate rustyline;
 
+mod ipg;
 mod latex;
 mod ui;
 
@@ -30,6 +32,11 @@ fn _main() -> Result<(), i32> {
         .set_term_width(80)
         .arg(Arg::with_name("2i-programm")
             .help("Das zu ladende Mikroprogramm"))
+        .subcommand(SubCommand::with_name("ipg-csv")
+            .about("Konvertiere ein Programm in das ipg-csv-Format, das mit Hilfe von mcontrol auf den Minirechner geladen werden kann.")
+            .arg(Arg::with_name("2i-programm")
+                .help("Das zu konvertierende Mikroprogramm")
+                .required(true)))
         .subcommand(SubCommand::with_name("latex")
             .about("Erstelle ein LaTeX-Dokument mit einer übersichtlichen Darstellung der gegebenen Programme.")
             .arg(Arg::with_name("autor")
@@ -45,6 +52,7 @@ fn _main() -> Result<(), i32> {
 
     // Execute subcommand instead of main program if specified
     match args.subcommand() {
+        ("ipg-csv", Some(args)) => return ipg::main(args),
         ("latex", Some(args)) => return latex::main(args),
         _ => (),
     }
