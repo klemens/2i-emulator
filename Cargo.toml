@@ -14,4 +14,4 @@ path = "src/cli/main.rs"
 [dependencies]
 rustyline = { git = "https://github.com/klemens/rustyline.git", branch = "2i-emulator"}
 cmdline-parser = "0.1"
-regex = "0.1"
+regex = "0.2"
