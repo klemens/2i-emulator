@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content trait">
 <h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>emulator</a>::<wbr><a href='index.html'>bus</a>::<wbr><a class='trait' href=''>Bus</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-90' class='srclink' href='../../src/emulator/src/emulator/bus.rs.html#12-15' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/emulator/bus.rs.html#12-15' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait Bus {
     fn <a href='#tymethod.read' class='fnname'>read</a>(&amp;self, address: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;;
     fn <a href='#tymethod.write' class='fnname'>write</a>(&amp;self, address: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;;
@@ -56,14 +57,14 @@
 </div>
             <h2 id='required-methods'>Required Methods</h2>
             <div class='methods'>
-        <h3 id='tymethod.read' class='method stab '><code>fn <a href='#tymethod.read' class='fnname'>read</a>(&amp;self, address: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;</code></h3><h3 id='tymethod.write' class='method stab '><code>fn <a href='#tymethod.write' class='fnname'>write</a>(&amp;self, address: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h3></div>
+        <h3 id='tymethod.read' class='method stab '><span id='read.v' class='invisible'><code>fn <a href='#tymethod.read' class='fnname'>read</a>(&amp;self, address: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;</code></span></h3><h3 id='tymethod.write' class='method stab '><span id='write.v' class='invisible'><code>fn <a href='#tymethod.write' class='fnname'>write</a>(&amp;self, address: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></span></h3></div>
         <h2 id='implementors'>Implementors</h2>
         <ul class='item-list' id='implementors-list'>
-    <li><code>impl&lt;'a&gt; <a class='trait' href='../../emulator/bus/trait.Bus.html' title='emulator::bus::Bus'>Bus</a> for <a class='struct' href='../../emulator/bus/struct.Ram.html' title='emulator::bus::Ram'>Ram</a>&lt;'a&gt;</code></li>
-<li><code>impl <a class='trait' href='../../emulator/bus/trait.Bus.html' title='emulator::bus::Bus'>Bus</a> for <a class='struct' href='../../emulator/bus/struct.IoRegisters.html' title='emulator::bus::IoRegisters'>IoRegisters</a></code></li>
+    <li><code>impl&lt;'a&gt; Bus for <a class='struct' href='../../emulator/bus/struct.Ram.html' title='emulator::bus::Ram'>Ram</a>&lt;'a&gt;</code></li>
+<li><code>impl Bus for <a class='struct' href='../../emulator/bus/struct.IoRegisters.html' title='emulator::bus::IoRegisters'>IoRegisters</a></code></li>
 </ul><script type="text/javascript" async
-                              src="../../implementors/emulator/bus/trait.Bus.js">
-                      </script></section>
+                         src="../../implementors/emulator/bus/trait.Bus.js">
+                 </script></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -86,6 +87,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -117,11 +120,9 @@
     <script>
         window.rootPath = "../../";
         window.currentCrate = "emulator";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>

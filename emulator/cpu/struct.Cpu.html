@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,13 +44,11 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>emulator</a>::<wbr><a href='index.html'>cpu</a>::<wbr><a class='struct' href=''>Cpu</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-154' class='srclink' href='../../src/emulator/src/emulator/cpu.rs.html#29-32' title='goto source code'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct Cpu {
-    // some fields omitted
-}</pre><div class='docblock'><p>Cpu of the 2i.</p>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/emulator/cpu.rs.html#30-33' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Cpu { /* fields omitted */ }</pre><div class='docblock'><p>Cpu of the 2i.</p>
 
 <p>Represents the 8 bit cpu of the 2i with 8 registers that are 8 bit wide and
 the three status registers (carry, negative, zero).</p>
@@ -66,15 +65,19 @@ the three status registers (carry, negative, zero).</p>
 
 <span class='kw'>let</span> _ <span class='op'>=</span> <span class='ident'>cpu</span>.<span class='ident'>execute_instruction</span>(<span class='ident'>inst</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ram</span>);
 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>6</span>, <span class='ident'>cpu</span>.<span class='ident'>inspect_registers</span>()[<span class='number'>0</span>]);</pre>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/emulator/cpu.rs.html#35-135' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></span></h4>
 <div class='docblock'><p>Create a new cpu with all registers and flags set to zero.</p>
-</div><h4 id='method.execute_instruction' class='method'><code>fn <a href='#method.execute_instruction' class='fnname'>execute_instruction</a>&lt;B: <a class='trait' href='../../emulator/bus/trait.Bus.html' title='emulator::bus::Bus'>Bus</a>&gt;(&amp;mut self, inst: <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a>, bus: &amp;mut B) -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></h4>
+</div><h4 id='method.execute_instruction' class='method'><span id='execute_instruction.v' class='invisible'><code>fn <a href='#method.execute_instruction' class='fnname'>execute_instruction</a>&lt;B:&nbsp;<a class='trait' href='../../emulator/bus/trait.Bus.html' title='emulator::bus::Bus'>Bus</a>&gt;(&amp;mut self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; inst: <a class='struct' href='../../emulator/instruction/struct.Instruction.html' title='emulator::instruction::Instruction'>Instruction</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bus: &amp;mut B)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='type' href='../../emulator/type.Result.html' title='emulator::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></span></h4>
 <div class='docblock'><p>Execute the given instruction on the cpu using the given, bus, input
 and output. Returns the address of the next instruction and the alu flags.</p>
-</div><h4 id='method.inspect_registers' class='method'><code>fn <a href='#method.inspect_registers' class='fnname'>inspect_registers</a>(&amp;mut self) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 8]</a></code></h4>
+</div><h4 id='method.inspect_registers' class='method'><span id='inspect_registers.v' class='invisible'><code>fn <a href='#method.inspect_registers' class='fnname'>inspect_registers</a>(&amp;mut self) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 8]</a></code></span></h4>
 <div class='docblock'><p>Direct access to the registers.</p>
-</div><h4 id='method.inspect_flags' class='method'><code>fn <a href='#method.inspect_flags' class='fnname'>inspect_flags</a>(&amp;mut self) -&gt; &amp;mut <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a></code></h4>
+</div><h4 id='method.inspect_flags' class='method'><span id='inspect_flags.v' class='invisible'><code>fn <a href='#method.inspect_flags' class='fnname'>inspect_flags</a>(&amp;mut self) -&gt; &amp;mut <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a></code></span></h4>
 <div class='docblock'><p>Direct access to the flag register.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/emulator/cpu.rs.html#29' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.default' class='method'><span id='default.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../emulator/cpu/struct.Cpu.html' title='emulator::cpu::Cpu'>Cpu</a></code></span></h4>
+<div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
 
@@ -98,6 +101,8 @@ and output. Returns the address of the next instruction and the alu flags.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -129,11 +134,9 @@ and output. Returns the address of the next instruction and the alu flags.</p>
     <script>
         window.rootPath = "../../";
         window.currentCrate = "emulator";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>

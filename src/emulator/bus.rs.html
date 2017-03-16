@@ -9,8 +9,9 @@
 
     <title>bus.rs.html -- source</title>
 
-    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -242,13 +243,17 @@
 <span id="199">199</span>
 <span id="200">200</span>
 <span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! The 2i bus.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! This module contains a trait for the 8 bit bus used in the 2i and several</span>
 <span class='doccomment'>//! types implementing it.</span>
 
-<span class='kw'>use</span> <span class='ident'>super</span>::{<span class='ident'>Error</span>, <span class='prelude-ty'>Result</span>};
+<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>Error</span>, <span class='prelude-ty'>Result</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>RefCell</span>;
 
 <span class='doccomment'>/// Bus of the 2i.</span>
@@ -270,10 +275,7 @@
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Ram</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
     <span class='doccomment'>/// Create a new ram with all addresses initialised to zero.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>Ram</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-        <span class='ident'>Ram</span> {
-            <span class='ident'>memory</span>: <span class='ident'>RefCell</span>::<span class='ident'>new</span>([<span class='number'>0</span>; <span class='number'>256</span>]),
-            <span class='ident'>overlays</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
-        }
+        <span class='ident'>Ram</span>::<span class='ident'>default</span>()
     }
 
     <span class='doccomment'>/// Direct access to the ram wrapped in a RefCell.</span>
@@ -289,6 +291,15 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_overlay</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>first_address</span>: <span class='ident'>u8</span>, <span class='ident'>last_address</span>: <span class='ident'>u8</span>,
         <span class='ident'>overlay_bus</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Bus</span>) {
         <span class='self'>self</span>.<span class='ident'>overlays</span>.<span class='ident'>push</span>((<span class='ident'>first_address</span>, <span class='ident'>last_address</span>, <span class='ident'>overlay_bus</span>));
+    }
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Default</span> <span class='kw'>for</span> <span class='ident'>Ram</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
+    <span class='kw'>fn</span> <span class='ident'>default</span>() <span class='op'>-&gt;</span> <span class='ident'>Ram</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
+        <span class='ident'>Ram</span> {
+            <span class='ident'>memory</span>: <span class='ident'>RefCell</span>::<span class='ident'>new</span>([<span class='number'>0</span>; <span class='number'>256</span>]),
+            <span class='ident'>overlays</span>: <span class='ident'>Default</span>::<span class='ident'>default</span>(),
+        }
     }
 }
 
@@ -319,6 +330,7 @@
 <span class='doccomment'>/// Represents the input and output registers of the 2i. Reading from an</span>
 <span class='doccomment'>/// address lower than FC or writing to an address lower than FE will result</span>
 <span class='doccomment'>/// in an error.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Default</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>IoRegisters</span> {
     <span class='ident'>input</span>: <span class='ident'>RefCell</span><span class='op'>&lt;</span>[<span class='ident'>u8</span>; <span class='number'>4</span>]<span class='op'>&gt;</span>,
     <span class='ident'>output</span>: <span class='ident'>RefCell</span><span class='op'>&lt;</span>[<span class='ident'>u8</span>; <span class='number'>2</span>]<span class='op'>&gt;</span>,
@@ -327,10 +339,7 @@
 <span class='kw'>impl</span> <span class='ident'>IoRegisters</span> {
     <span class='doccomment'>/// Create a new IoRegisters with all registers initialised to zero.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>IoRegisters</span> {
-        <span class='ident'>IoRegisters</span> {
-            <span class='ident'>input</span>: <span class='ident'>RefCell</span>::<span class='ident'>new</span>([<span class='number'>0</span>; <span class='number'>4</span>]),
-            <span class='ident'>output</span>: <span class='ident'>RefCell</span>::<span class='ident'>new</span>([<span class='number'>0</span>; <span class='number'>2</span>]),
-        }
+        <span class='ident'>IoRegisters</span>::<span class='ident'>default</span>()
     }
 
     <span class='doccomment'>/// Direct access to the input registers wrapped in a RefCell.</span>
@@ -366,7 +375,7 @@
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
-    <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>read_write_memory</span>() {
@@ -468,6 +477,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -497,13 +508,11 @@
     
 
     <script>
-        window.rootPath = "../../../../";
+        window.rootPath = "../../";
         window.currentCrate = "emulator";
-        window.playgroundUrl = "";
     </script>
-    <script src="../../../../jquery.js"></script>
-    <script src="../../../../main.js"></script>
-    
-    <script defer src="../../../../search-index.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

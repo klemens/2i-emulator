@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,12 +44,13 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>emulator</a>::<wbr><a href='index.html'>alu</a>::<wbr><a class='struct' href=''>Alu</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-8' class='srclink' href='../../src/emulator/src/emulator/alu.rs.html#6' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/emulator/alu.rs.html#6' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Alu;</pre><div class='docblock'><p>Alu of the 2i.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../emulator/alu/struct.Alu.html' title='emulator::alu::Alu'>Alu</a></code></h3><div class='impl-items'><h4 id='method.calculate' class='method'><code>fn <a href='#method.calculate' class='fnname'>calculate</a>(instruction: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, a: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, b: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, carry: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../emulator/alu/struct.Alu.html' title='emulator::alu::Alu'>Alu</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/emulator/alu.rs.html#8-51' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.calculate' class='method'><span id='calculate.v' class='invisible'><code>fn <a href='#method.calculate' class='fnname'>calculate</a>(instruction: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, a: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, b: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, carry: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>, <a class='struct' href='../../emulator/alu/struct.Flags.html' title='emulator::alu::Flags'>Flags</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></span></h4>
 <div class='docblock'><p>Execute an instruction with two operands on the alu.</p>
 
 <p>Returns the result and the resulting flags. Higher instructions than
@@ -76,6 +78,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -107,11 +111,9 @@
     <script>
         window.rootPath = "../../";
         window.currentCrate = "emulator";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>

@@ -9,8 +9,9 @@
 
     <title>instruction.rs.html -- source</title>
 
-    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -376,18 +377,36 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! The 2i instruction</span>
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
 
-<span class='kw'>use</span> <span class='ident'>super</span>::{<span class='ident'>Error</span>, <span class='prelude-ty'>Result</span>};
+<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>Error</span>, <span class='prelude-ty'>Result</span>};
 
 <span class='doccomment'>/// Instruction of the 2i.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// Represents a 25 bit wide instruction that the 2i uses. Provides some</span>
 <span class='doccomment'>/// conveniance methods to extract all different parts.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>, <span class='ident'>Default</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Instruction</span> {
     <span class='ident'>instruction</span>: <span class='ident'>u32</span>,
 }
@@ -533,14 +552,19 @@
         <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>get_alu_instruction</span>() {
             <span class='number'>0b0000</span> <span class='op'>=&gt;</span> <span class='ident'>a</span>,
             <span class='number'>0b0001</span> <span class='op'>=&gt;</span> <span class='ident'>b</span>,
-            <span class='number'>0b0010</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} ⊽ {}&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
+            <span class='number'>0b0010</span> <span class='kw'>if</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='ident'>b</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;¬{}&quot;</span>, <span class='ident'>a</span>),
+            <span class='number'>0b0010</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} NOR {}&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
             <span class='number'>0b0011</span> <span class='op'>=&gt;</span> <span class='string'>&quot;0&quot;</span>.<span class='ident'>to_string</span>(),
+            <span class='number'>0b0100</span> <span class='kw'>if</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='ident'>b</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} &lt;&lt; 1&quot;</span>, <span class='ident'>a</span>),
             <span class='number'>0b0100</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} + {}&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
+            <span class='number'>0b0101</span> <span class='kw'>if</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='ident'>b</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;({} &lt;&lt; 1) + 1&quot;</span>, <span class='ident'>a</span>),
             <span class='number'>0b0101</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} + {} + 1&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
+            <span class='number'>0b0110</span> <span class='kw'>if</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='ident'>b</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;({} &lt;&lt; 1) + C&quot;</span>, <span class='ident'>a</span>),
             <span class='number'>0b0110</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} + {} + C&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
-            <span class='number'>0b0111</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} + {} + C̅&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
+            <span class='number'>0b0111</span> <span class='kw'>if</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='ident'>b</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;({} &lt;&lt; 1) + ¬C&quot;</span>, <span class='ident'>a</span>),
+            <span class='number'>0b0111</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} + {} + ¬C&quot;</span>, <span class='ident'>a</span>, <span class='ident'>b</span>),
             <span class='number'>0b1000</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} &gt;&gt; 1&quot;</span>, <span class='ident'>a</span>),
-            <span class='number'>0b1001</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} ⤿&gt; 1&quot;</span>, <span class='ident'>a</span>),
+            <span class='number'>0b1001</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} R&gt; 1&quot;</span>, <span class='ident'>a</span>),
             <span class='number'>0b1010</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} C&gt; 1&quot;</span>, <span class='ident'>a</span>),
             <span class='number'>0b1011</span> <span class='op'>=&gt;</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} ?&gt; 1&quot;</span>, <span class='ident'>a</span>),
             <span class='number'>0b1100</span> <span class='op'>=&gt;</span> <span class='string'>&quot;0&quot;</span>.<span class='ident'>to_string</span>(),
@@ -560,7 +584,7 @@
         };
         <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_bus_enabled</span>() <span class='op'>&amp;&amp;</span> <span class='self'>self</span>.<span class='ident'>is_bus_writable</span>() {
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>should_write_register</span>() {
-                <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;(R{}), {} = &quot;</span>, <span class='self'>self</span>.<span class='ident'>get_register_address_a</span>(), <span class='ident'>format_register</span>())
+                <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;(R{}),{} = &quot;</span>, <span class='self'>self</span>.<span class='ident'>get_register_address_a</span>(), <span class='ident'>format_register</span>())
             } <span class='kw'>else</span> {
                 <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;(R{}) = &quot;</span>, <span class='self'>self</span>.<span class='ident'>get_register_address_a</span>())
             }
@@ -597,7 +621,12 @@
             <span class='ident'>String</span>::<span class='ident'>new</span>()
         };
 
-        <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}{}{}{}&quot;</span>, <span class='ident'>output</span>, <span class='ident'>result</span>, <span class='ident'>address_control</span>, <span class='ident'>change_flags</span>)
+        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>instruction</span> <span class='kw-2'>&amp;</span> <span class='number'>0b1100000111111111111111110</span> <span class='op'>==</span> <span class='number'>0</span> {
+            <span class='comment'>// NOP if everything except NA and CHFL is zero</span>
+            <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;NOP{}{}&quot;</span>, <span class='ident'>address_control</span>, <span class='ident'>change_flags</span>)
+        } <span class='kw'>else</span> {
+            <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}{}{}{}&quot;</span>, <span class='ident'>output</span>, <span class='ident'>result</span>, <span class='ident'>address_control</span>, <span class='ident'>change_flags</span>)
+        }
     }
 }
 
@@ -609,7 +638,7 @@
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
-    <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='attribute'>#[<span class='ident'>should_panic</span>]</span>
@@ -621,33 +650,33 @@
     <span class='kw'>fn</span> <span class='ident'>extract_fields</span> () {
         <span class='comment'>// Load constant FC into register 0</span>
         <span class='kw'>let</span> <span class='ident'>i1</span> <span class='op'>=</span> <span class='ident'>Instruction</span>::<span class='ident'>new</span>(<span class='number'>0b00_00001_00_000_1100_01_01_0001_0</span>).<span class='ident'>unwrap</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_store_flags</span>(), <span class='boolval'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_store_flags</span>(), <span class='bool-val'>false</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_alu_instruction</span>(), <span class='number'>0b0001</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_b_const</span>(), <span class='boolval'>true</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_a_bus</span>(), <span class='boolval'>false</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register</span>(), <span class='boolval'>true</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register_b</span>(), <span class='boolval'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_b_const</span>(), <span class='bool-val'>true</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_a_bus</span>(), <span class='bool-val'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register</span>(), <span class='bool-val'>true</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register_b</span>(), <span class='bool-val'>false</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_constant_input</span>(), <span class='number'>0b11111100</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_register_address_b</span>(), <span class='number'>0b100</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_register_address_a</span>(), <span class='number'>0b000</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_enabled</span>(), <span class='boolval'>false</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_writable</span>(), <span class='boolval'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_enabled</span>(), <span class='bool-val'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_writable</span>(), <span class='bool-val'>false</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_next_instruction_address</span>(), <span class='number'>0b00001</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_address_control</span>(), <span class='number'>0b00</span>);
 
         <span class='comment'>// Load from memory location FC (register 0) into register 2</span>
         <span class='kw'>let</span> <span class='ident'>i1</span> <span class='op'>=</span> <span class='ident'>Instruction</span>::<span class='ident'>new</span>(<span class='number'>0b00_00010_01_000_0010_11_10_0000_0</span>).<span class='ident'>unwrap</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_store_flags</span>(), <span class='boolval'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_store_flags</span>(), <span class='bool-val'>false</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_alu_instruction</span>(), <span class='number'>0b0000</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_b_const</span>(), <span class='boolval'>false</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_a_bus</span>(), <span class='boolval'>true</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register</span>(), <span class='boolval'>true</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register_b</span>(), <span class='boolval'>true</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_b_const</span>(), <span class='bool-val'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_alu_input_a_bus</span>(), <span class='bool-val'>true</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register</span>(), <span class='bool-val'>true</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>should_write_register_b</span>(), <span class='bool-val'>true</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_constant_input</span>(), <span class='number'>0b00000010</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_register_address_b</span>(), <span class='number'>0b010</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_register_address_a</span>(), <span class='number'>0b000</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_enabled</span>(), <span class='boolval'>true</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_writable</span>(), <span class='boolval'>false</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_enabled</span>(), <span class='bool-val'>true</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>is_bus_writable</span>(), <span class='bool-val'>false</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_next_instruction_address</span>(), <span class='number'>0b00010</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i1</span>.<span class='ident'>get_address_control</span>(), <span class='number'>0b00</span>);
     }
@@ -681,28 +710,36 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>to_string</span>() {
         <span class='kw'>let</span> <span class='ident'>testcases</span> <span class='op'>=</span> [
-            (<span class='number'>0b00_00000_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
-            (<span class='number'>0b00_00000_00_000_0000_00_00_0000_1</span>, <span class='string'>&quot;TEST R0; CHFL&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;NOP&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;NOP; JMP 00000&quot;</span>, <span class='prelude-val'>None</span>),
+            (<span class='number'>0b00_00000_00_000_0000_00_00_0001_0</span>, <span class='string'>&quot;TEST R0&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_00_00_0000_1</span>, <span class='string'>&quot;NOP; CHFL&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1100_01_01_0001_0</span>, <span class='string'>&quot;R0 = FC&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1100_01_01_0001_0</span>, <span class='string'>&quot;R0 = FC; JMP 00000&quot;</span>, <span class='prelude-val'>None</span>),
             (<span class='number'>0b00_00000_00_000_1100_01_01_0001_0</span>, <span class='string'>&quot;R0 = FC; JMP 00000&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>1</span>)),
             (<span class='number'>0b00_00000_01_000_0000_01_10_0000_0</span>, <span class='string'>&quot;R0 = (R0)&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_11_001_0010_00_00_0001_0</span>, <span class='string'>&quot;(R1) = R2&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
-            (<span class='number'>0b00_00000_11_001_0011_01_01_0001_0</span>, <span class='string'>&quot;(R1), R1 = 3&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_11_001_0011_01_01_0001_0</span>, <span class='string'>&quot;(R1),R1 = 3&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b01_00010_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0; JMP 00011&quot;</span>, <span class='prelude-val'>None</span>),
             (<span class='number'>0b01_00101_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0; CF 0010C&quot;</span>, <span class='prelude-val'>None</span>),
             (<span class='number'>0b10_00110_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0; CO 0011C&quot;</span>, <span class='prelude-val'>None</span>),
             (<span class='number'>0b10_01001_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0; ZO 0100Z&quot;</span>, <span class='prelude-val'>None</span>),
             (<span class='number'>0b11_01010_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0; NO 0101N&quot;</span>, <span class='prelude-val'>None</span>),
             (<span class='number'>0b11_01101_00_000_0000_00_00_0000_0</span>, <span class='string'>&quot;TEST R0; JMP 01100&quot;</span>, <span class='prelude-val'>None</span>),
-            (<span class='number'>0b00_00000_00_000_1111_01_01_0010_0</span>, <span class='string'>&quot;R0 = R0 ⊽ FF&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_1111_01_01_0010_0</span>, <span class='string'>&quot;R0 = R0 NOR FF&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_01_00_0010_0</span>, <span class='string'>&quot;R0 = ¬R0&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_010_0000_01_00_0011_0</span>, <span class='string'>&quot;R2 = 0&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1111_01_01_0100_0</span>, <span class='string'>&quot;R0 = R0 + FF&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0001_01_00_0100_0</span>, <span class='string'>&quot;R0 = R0 + R1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_01_00_0100_0</span>, <span class='string'>&quot;R0 = R0 &lt;&lt; 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1111_01_01_0101_0</span>, <span class='string'>&quot;R0 = R0 + FF + 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_01_00_0101_0</span>, <span class='string'>&quot;R0 = (R0 &lt;&lt; 1) + 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1111_01_01_0110_0</span>, <span class='string'>&quot;R0 = R0 + FF + C&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
-            (<span class='number'>0b00_00000_00_000_1111_01_01_0111_0</span>, <span class='string'>&quot;R0 = R0 + FF + C̅&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_01_00_0110_0</span>, <span class='string'>&quot;R0 = (R0 &lt;&lt; 1) + C&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_1111_01_01_0111_0</span>, <span class='string'>&quot;R0 = R0 + FF + ¬C&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_0000_01_00_0111_0</span>, <span class='string'>&quot;R0 = (R0 &lt;&lt; 1) + ¬C&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1111_01_01_1000_0</span>, <span class='string'>&quot;R0 = R0 &gt;&gt; 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
-            (<span class='number'>0b00_00000_00_000_1111_01_01_1001_0</span>, <span class='string'>&quot;R0 = R0 ⤿&gt; 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
+            (<span class='number'>0b00_00000_00_000_1111_01_01_1001_0</span>, <span class='string'>&quot;R0 = R0 R&gt; 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1111_01_01_1010_0</span>, <span class='string'>&quot;R0 = R0 C&gt; 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
             (<span class='number'>0b00_00000_00_000_1111_01_01_1011_0</span>, <span class='string'>&quot;R0 = R0 ?&gt; 1&quot;</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)),
         ];
@@ -736,6 +773,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -765,13 +804,11 @@
     
 
     <script>
-        window.rootPath = "../../../../";
+        window.rootPath = "../../";
         window.currentCrate = "emulator";
-        window.playgroundUrl = "";
     </script>
-    <script src="../../../../jquery.js"></script>
-    <script src="../../../../main.js"></script>
-    
-    <script defer src="../../../../search-index.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>
