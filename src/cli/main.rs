@@ -9,6 +9,7 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 
 use regex::Regex;
+use rustyline::{CompletionType, Editor};
 
 fn main() {
     // Load the program from the filename given as the first cli parameter
@@ -25,11 +26,10 @@ fn main() {
              option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
     ui::status(&mut computer, &io, &program, None);
 
-    let config = rustyline::Config::builder()
-        .completion_type(rustyline::CompletionType::List)
-        .build();
-    let completer = Completer{};
-    let mut line_reader = rustyline::Editor::with_config(config);
+    // Set up line editing and completion
+    let completer = Completer::default();
+    let config = rustyline::Config::builder().completion_type(CompletionType::List);
+    let mut line_reader = Editor::with_config(config.build());
     line_reader.set_completer(Some(&completer));
 
     // eg: FD = 1101
@@ -138,11 +138,19 @@ pub struct Program {
     instructions: [emulator::Instruction; 32],
 }
 
-struct Completer {}
+#[derive(Default)]
+struct Completer {
+    path_completer: rustyline::completion::FilenameCompleter,
+}
 
 impl rustyline::completion::Completer for Completer {
     fn complete(&self, line: &str, pos: usize) -> rustyline::Result<(usize, Vec<String>)> {
-        // only complete at the end
+        // complete file paths for the load command
+        if line.starts_with("load ") && pos >= 5 {
+            return self.path_completer.complete(line, pos);
+        }
+
+        // complete normal commands only at the end
         if pos < line.len() {
             return Ok((0, vec![]));
         }
