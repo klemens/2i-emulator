@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate clap;
 extern crate cmdline_parser;
 extern crate emulator;
 extern crate regex;
@@ -8,6 +10,7 @@ mod ui;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
+use clap::{App, AppSettings, Arg};
 use regex::Regex;
 use rustyline::{CompletionType, Editor};
 
@@ -18,8 +21,16 @@ fn main() {
 }
 
 fn _main() -> Result<(), i32> {
+    let args = App::new("2i-emulator")
+        .version(crate_version!())
+        .setting(AppSettings::DisableHelpSubcommand)
+        .set_term_width(80)
+        .arg(Arg::with_name("2i-programm")
+            .help("Das zu ladende Mikroprogramm"))
+        .get_matches();
+
     // Load the program from the filename given as the first cli parameter
-    let mut program = if let Some(file_name) = std::env::args().skip(1).next() {
+    let mut program = if let Some(file_name) = args.value_of("2i-programm") {
         Some(load_programm(&Path::new(&file_name)).map_err(|_| 2)?)
     } else {
         None
