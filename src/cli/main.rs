@@ -12,9 +12,15 @@ use regex::Regex;
 use rustyline::{CompletionType, Editor};
 
 fn main() {
+    if let Err(e) = _main() {
+        std::process::exit(e);
+    }
+}
+
+fn _main() -> Result<(), i32> {
     // Load the program from the filename given as the first cli parameter
     let mut program = if let Some(file_name) = std::env::args().skip(1).next() {
-        load_programm(&Path::new(&file_name)).ok()
+        Some(load_programm(&Path::new(&file_name)).map_err(|_| 2)?)
     } else {
         None
     };
@@ -52,7 +58,7 @@ fn main() {
                     }
                     Err(err) => {
                         println!("Fehler beim Ausführen des Befehls: \"{}\"", err);
-                        return;
+                        return Err(100);
                     }
                 }
             } else {
@@ -68,7 +74,7 @@ fn main() {
                 ui::status(&mut computer, &io, &program, None);
             }
         } else if line == "exit" || line == "quit" {
-            return;
+            break;
         } else if line == "help" {
             ui::display_help();
         } else if line == "ram" {
@@ -91,6 +97,8 @@ fn main() {
             println!("Ungültige Eingabe. \"help\" für Hilfe.");
         }
     }
+
+    Ok(())
 }
 
 /// Load 2i program from path and print errors to stdout if it failes
