@@ -1,6 +1,6 @@
 [root]
 name = "2i-emulator"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "clap 2.21.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cmdline-parser 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
