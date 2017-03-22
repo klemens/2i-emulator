@@ -30,17 +30,23 @@ You can specify the filename of the program you want to load as a parameter on
 the command line:
 
 ```sh
-target/release/2i-emulator doc/examples/answer.2i
+./2i-emulator doc/examples/answer.2i
 ```
 
 Or use the built-in `load` command:
 
 ```sh
-target/release/2i-emulator
+./2i-emulator
 > load doc/examples/answer.2i
 ```
 
-You can also associate `2i`-files directly with the emulator.
+You can also generate LaTeX documents for your `2i`-programs:
+
+```sh
+./2i-emulator latex --autor "Erika Mustermann" answer.2i multiply.2i
+```
+
+See `./2i-emulator --help` for more details.
 
 ## Example
 
