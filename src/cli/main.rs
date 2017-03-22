@@ -110,6 +110,12 @@ fn _main() -> Result<(), i32> {
             ui::display_help();
         } else if line == "ram" {
             ui::display_ram(&computer.ram);
+        } else if line == "program" {
+            if let Some(ref program) = program {
+                ui::display_program(&program);
+            } else {
+                println!("Aktuell kein Mikroprogramm geladen.")
+            }
         } else if let Some(matches) = input_pattern.captures(line) {
             // Try to set one of the input registers
             if let Ok(value) = u8::from_str_radix(&matches["value"], 2) {
@@ -204,6 +210,7 @@ impl rustyline::completion::Completer for Completer {
             "help",
             "quit",
             "ram",
+            "program",
         ];
 
         let completions = commands.iter().filter_map(|&command| {

@@ -98,6 +98,20 @@ pub fn display_ram(ram: &Ram) {
     println!("\n");
 }
 
+pub fn display_program(program: &Program) {
+    println!();
+    for (addr, inst) in program.instructions.iter().enumerate() {
+        // Ignore "NOP; JMP 00000" instructions
+        if inst.get_instruction() == 0 {
+            continue;
+        }
+
+        println!("{:05b}: {:30} {}", addr, inst.to_text_paraphrase(Some(addr + 1)),
+            format_instruction(*inst));
+    }
+    println!();
+}
+
 /// Display a list of all commands with descriptions
 pub fn display_help() {
     println!("\n\
@@ -105,6 +119,7 @@ pub fn display_help() {
         ENTER         Nächsten Befehl ausführen\n\
         load <path>   Neues Mikroprogramm laden (CPU wird zurückgesetzt)\n\
         ram           RAM-Übersicht anzeigen\n\
+        program       Mikroprogramm anzeigen (ohne NOPs)\n\
         help          Hilfe anzeigen\n\
         exit/quit     Emulator beenden (alternativ: STRG-D)\n")
 }
