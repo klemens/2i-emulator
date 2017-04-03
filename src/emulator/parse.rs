@@ -199,6 +199,28 @@ mod tests {
     use std::io::Cursor;
 
     #[test]
+    fn parser() {
+        let program = parse_instructions(Cursor::new("\
+            # Simple program\n\
+            \n\
+            00000: 00 00001 000000000000000000\
+          \n       00 00011 000000000000000000\n\
+            00011: 00 11111 000000000000000000\n\
+            # the following instruction ends up in 00010, not 00100!\
+          \n       00 00000 000000000000000000\n\
+            1 11 11 : 00 00011 | 00 | 000 1111 01 | 01 0100 | 0\n\
+        ".to_owned())).unwrap();
+
+        assert_eq!(program.iter().filter_map(|e| *e).collect::<Vec<_>>().as_slice(), &[
+            Instruction::new(0b00_00001_000000000000000000).unwrap(),
+            Instruction::new(0b00_00011_000000000000000000).unwrap(),
+            Instruction::new(0b00_00000_000000000000000000).unwrap(),
+            Instruction::new(0b00_11111_000000000000000000).unwrap(),
+            Instruction::new(0b00_00011_000001111010101000).unwrap(),
+        ]);
+    }
+
+    #[test]
     fn reachable_backjump() {
         let program = Cursor::new("\
             00000: 00 00100 000000000000000000\n\
