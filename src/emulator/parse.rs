@@ -132,7 +132,7 @@ fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
 
     let reader = BufReader::new(reader);
     for line in reader.lines() {
-        let line = line.expect("Error while reading program.");
+        let line = line?;
 
         // Ignore comments that start with #
         if line.starts_with("#") || line.is_empty() {

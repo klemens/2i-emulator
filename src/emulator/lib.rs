@@ -7,6 +7,7 @@
 extern crate regex;
 
 use std::fmt;
+use std::io;
 use std::result;
 
 pub mod alu;
@@ -27,6 +28,7 @@ pub enum Error {
     Cpu(&'static str),
     Instruction(&'static str),
     Parse(&'static str),
+    Io(io::Error),
 }
 
 impl fmt::Display for Error {
@@ -36,7 +38,14 @@ impl fmt::Display for Error {
             &Error::Cpu(s) => write!(f, "Cpu error: {}", s),
             &Error::Instruction(s) => write!(f, "Instruction error: {}", s),
             &Error::Parse(s) => write!(f, "Parse error: {}", s),
+            &Error::Io(ref s) => write!(f, "IO error: {}", s),
         }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(error: io::Error) -> Self {
+        Error::Io(error)
     }
 }
 
