@@ -5,17 +5,19 @@
 use std::io::BufReader;
 use std::io::prelude::*;
 
+use regex::Regex;
+
 use super::{Error, Result};
 use super::instruction::Instruction;
 
 /// Parse 2i programs in string representation into arrays of `Instruction`s.
 ///
-/// Ignores empty lines and lines that start with `#`. You can use any char
-/// other than `0` and `1` to format your program for improved readability.
+/// Ignores empty lines and everything after the `#` char. You can use any char
+/// other than `0`, `1` and `:` to format your program for improved readability.
 ///
 /// Instructions can optionally be given an explicit address by prefixing them
-/// with the binary representation of the address. Instructions without an
-/// explicit address are saved at the first unused address.
+/// with the binary representation of the address followed by `:`. Instructions
+/// without an explicit address are saved at the first unused address.
 ///
 /// # Examples
 ///
@@ -126,6 +128,7 @@ pub fn read_reachable_program<R: Read>(reader: R) -> Result<Vec<(u8, Instruction
 /// For details on the syntax of the string representation see `read_program`.
 fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
     let mut instructions = [None; 32];
+    let explicit_address = Regex::new(r"^(?P<addr>[01]{5})\s*:\s*(?P<inst>.*)$").unwrap();
 
     let reader = BufReader::new(reader);
     for line in reader.lines() {
@@ -137,11 +140,17 @@ fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
         }
 
         // Check if an explicit address is given
-        let parts: Vec<_> = line.splitn(2, ": ").collect();
-        let (instruction, address) = if parts.len() == 2 {
-            (parts[1], Some(parts[0]))
+        let (instruction, address) = if line.contains(':') {
+            match explicit_address.captures(&line) {
+                Some(matches) => {
+                    let inst = matches.name("inst").unwrap().as_str();
+                    let addr = matches.name("addr").unwrap().as_str();
+                    (inst, Some(addr))
+                }
+                None => return Err(Error::Parse("Invalid instruction address")),
+            }
         } else {
-            (parts[0], None)
+            (line.as_str(), None)
         };
 
         // Parse Instruction
@@ -208,7 +217,7 @@ mod tests {
             00011: 00 11111 000000000000000000\n\
             # the following instruction ends up in 00010, not 00100!\
           \n       00 00000 000000000000000000\n\
-            1 11 11 : 00 00011 | 00 | 000 1111 01 | 01 0100 | 0\n\
+            11111 : 00 00011 | 00 | 000 1111 01 | 01 0100 | 0\n\
         ".to_owned())).unwrap();
 
         assert_eq!(program.iter().filter_map(|e| *e).collect::<Vec<_>>().as_slice(), &[
@@ -218,6 +227,14 @@ mod tests {
             Instruction::new(0b00_11111_000000000000000000).unwrap(),
             Instruction::new(0b00_00011_000001111010101000).unwrap(),
         ]);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid instruction address")]
+    fn invalid_address() {
+        let _ = parse_instructions(Cursor::new("\
+            0 0 0 0 0: 00 00001 000000000000000000\n\
+        ".to_owned())).unwrap();
     }
 
     #[test]

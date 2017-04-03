@@ -4,6 +4,8 @@
 //! programmed using microcode and is used in the computer science hardware
 //! course at Leipzig University.
 
+extern crate regex;
+
 use std::fmt;
 use std::result;
 
