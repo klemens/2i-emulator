@@ -134,14 +134,20 @@ fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
     for line in reader.lines() {
         let line = line?;
 
-        // Ignore comments that start with #
-        if line.starts_with("#") || line.is_empty() {
+        // Remove whitespace and comments that start with #
+        let line = match line.find('#') {
+            Some(start) => line[..start].trim(),
+            None => line.trim(),
+        };
+
+        // Ignore empty lines
+        if line.is_empty() {
             continue;
         }
 
         // Check if an explicit address is given
         let (instruction, address) = if line.contains(':') {
-            match explicit_address.captures(&line) {
+            match explicit_address.captures(line) {
                 Some(matches) => {
                     let inst = matches.name("inst").unwrap().as_str();
                     let addr = matches.name("addr").unwrap().as_str();
@@ -150,7 +156,7 @@ fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
                 None => return Err(Error::Parse("Invalid instruction address")),
             }
         } else {
-            (line.as_str(), None)
+            (line, None)
         };
 
         // Parse Instruction
@@ -212,8 +218,8 @@ mod tests {
         let program = parse_instructions(Cursor::new("\
             # Simple program\n\
             \n\
-            00000: 00 00001 000000000000000000\
-          \n       00 00011 000000000000000000\n\
+            00000: 00 00001 000000000000000000 # first instruction\n\
+          \n       00 00011 000000000000000000# second instruction\n\
             00011: 00 11111 000000000000000000\n\
             # the following instruction ends up in 00010, not 00100!\
           \n       00 00000 000000000000000000\n\

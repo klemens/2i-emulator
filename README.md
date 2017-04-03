@@ -65,9 +65,9 @@ to the output register `FE`.
 00110: 00 00000 | 11 | 001 0000 00 | 00 0001 0
 ```
 
-Any character but `0` and `1` is ignored inside commands and can be used for
-formatting. Every command can optionally be prefixed with its address. Empty
-lines and ones that start with `#` are ignored.
+Any character but `0`, `1` and `:` is ignored inside commands and can be used
+for formatting. Every command can optionally be prefixed with its address
+followed by `:`. An empty line and everything after `#` is ignored.
 
 ## Documentation
 
