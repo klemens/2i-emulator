@@ -11,8 +11,8 @@ Register:        Eingaberegister:   Aktuelles Mikroprogramm:
   R3: 00000000     FF: 00000000       00 01000 | 00 | 000 1111 01 | 01 0100 | 0
   R4: 00000000                        ~ R0 = R0 + FF; JMP 01000
   R5: 00000000   Ausgaberegister:
-  R6: 00000000     FE: 00111100     Letzte Flags, Flag-Register:
-  R7: 00000000     FF: 00000000       Carry: 0, 0 | Negativ: 0, 0 | Null: 0, 0
+  R6: 00000000     FE: 00111100     Flag (Register) | Interrupt: A/010, B/111
+  R7: 00000000     FF: 00000000       C: 0 (0), N: 0 (0), Z: 0 (0) | INT: 0, 0
 ```
 
 ## Build

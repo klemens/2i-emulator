@@ -9,6 +9,8 @@ use super::*;
 pub fn status(computer: &mut Computer, io: &IoRegisters,
               program: &Option<Program>, flags: Option<Flags>) {
     let flag_register = computer.cpu.inspect_flags().clone();
+    let volatile_interrupt = computer.cpu.check_volatile_interrupt();
+    let stored_interrupt = computer.cpu.check_stored_interrupt();
     let reg = computer.cpu.inspect_registers();
     let input = io.inspect_input().borrow();
     let output = io.inspect_output().borrow();
@@ -32,8 +34,8 @@ Register:        Eingaberegister:   Aktuelles Mikroprogramm:
   R3: {3:08b }     FF: {11:08b}       {instruction}
   R4: {4:08b }                        ~ {mnemonic}
   R5: {5:08b }   Ausgaberegister:
-  R6: {6:08b }     FE: {12:08b}     Letzte Flags, Flag-Register:
-  R7: {7:08b }     FF: {13:08b}       Carry: {co}, {cf} | Negativ: {no}, {nf} | Null: {zo}, {zf}
+  R6: {6:08b }     FE: {12:08b}     Flag (Register) | Interrupt: A/010, B/111
+  R7: {7:08b }     FF: {13:08b}       C: {co} ({cf}), N: {no} ({nf}), Z: {zo} ({zf}) | INT: {ia}, {ib}
 
 ",
         reg[0], reg[1], reg[2], reg[3],
@@ -47,6 +49,8 @@ Register:        Eingaberegister:   Aktuelles Mikroprogramm:
         co = flags.map_or("-".into(), |f| format!("{}", f.carry() as u8)),
         no = flags.map_or("-".into(), |f| format!("{}", f.negative() as u8)),
         zo = flags.map_or("-".into(), |f| format!("{}", f.zero() as u8)),
+        ia = volatile_interrupt as u8,
+        ib = stored_interrupt as u8,
         cf = flag_register.carry() as u8,
         nf = flag_register.negative() as u8,
         zf = flag_register.zero() as u8);
@@ -118,6 +122,9 @@ pub fn display_help() {
         FX = <value>  Eingaberegister setzen (zB: FC = 11010)\n\
         ENTER         Nächsten Befehl ausführen\n\
         load <path>   Neues Mikroprogramm laden (CPU wird zurückgesetzt)\n\
+        trigger <int> Interrupt auslösen:\
+      \n                INTA (MAC 010): Nur für den nächsten Befehl gültig\
+      \n                INTB (MAC 111): Gültig bis zum nächsten Befehl mit MAC = 111\n\
         ram           RAM-Übersicht anzeigen\n\
         program       Mikroprogramm anzeigen (ohne NOPs)\n\
         help          Hilfe anzeigen\n\

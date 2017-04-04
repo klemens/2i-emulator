@@ -112,6 +112,16 @@ fn _main() -> Result<(), i32> {
                 computer = Computer::new(&io);
                 ui::status(&mut computer, &io, &program, None);
             }
+        } else if line.starts_with("trigger ") {
+            match &line[8..] {
+                "INTA" => computer.cpu.trigger_volatile_interrupt(),
+                "INTB" => computer.cpu.trigger_stored_interrupt(),
+                int => {
+                    println!("Kein gültiger interrupt: {}", int);
+                    continue;
+                }
+            };
+            ui::status(&mut computer, &io, &program, None);
         } else if line == "exit" || line == "quit" {
             break;
         } else if line == "help" {
@@ -215,6 +225,8 @@ impl rustyline::completion::Completer for Completer {
             "FD = ",
             "FE = ",
             "FF = ",
+            "trigger INTA",
+            "trigger INTB",
             "help",
             "quit",
             "ram",

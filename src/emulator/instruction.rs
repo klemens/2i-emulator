@@ -207,12 +207,12 @@ impl Instruction {
 
             match self.get_address_control() << 1 | (next_address & 0b00001) {
                 0b000 | 0b001 => format!("; JMP {:05b}", next_address),
-                0b010 => format!("; JMP {:04b}1", next_address_base),
+                0b010 => format!("; INTA {:04b}I", next_address_base),
                 0b011 => format!("; CF {:04b}C", next_address_base),
                 0b100 => format!("; CO {:04b}C", next_address_base),
                 0b101 => format!("; ZO {:04b}Z", next_address_base),
                 0b110 => format!("; NO {:04b}N", next_address_base),
-                0b111 => format!("; JMP {:04b}0", next_address_base),
+                0b111 => format!("; INTB {:04b}I", next_address_base),
                 _ => panic!("Invalid address control"),
             }
         };
@@ -321,12 +321,12 @@ mod tests {
             (0b00_00000_00_000_0000_01_00_0000_0, "R0 = R0 << 1; HLDC", Some(0)),
             (0b00_00000_00_000_0000_00_00_0001_0, "TEST R0", Some(0)),
             (0b00_00000_01_000_0000_01_10_0001_0, "R0 = (R0)", Some(0)),
-            (0b01_00010_00_000_0000_00_00_0001_0, "TEST R0; JMP 00011", None),
+            (0b01_00010_00_000_0000_00_00_0001_0, "TEST R0; INTA 0001I", None),
             (0b01_00101_00_000_0000_00_00_0001_0, "TEST R0; CF 0010C", None),
             (0b10_00110_00_000_0000_00_00_0001_0, "TEST R0; CO 0011C", None),
             (0b10_01001_00_000_0000_00_00_0001_0, "TEST R0; ZO 0100Z", None),
             (0b11_01010_00_000_0000_00_00_0001_0, "TEST R0; NO 0101N", None),
-            (0b11_01101_00_000_0000_00_00_0001_0, "TEST R0; JMP 01100", None),
+            (0b11_01101_00_000_0000_00_00_0001_0, "TEST R0; INTB 0110I", None),
             (0b00_00000_00_000_1111_01_01_0010_0, "R0 = R0 NOR FF", Some(0)),
             (0b00_00000_00_000_0000_01_00_0010_0, "R0 = ¬R0", Some(0)),
             (0b00_00000_00_010_0000_01_00_0011_0, "R2 = 0", Some(0)),

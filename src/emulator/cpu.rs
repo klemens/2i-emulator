@@ -30,6 +30,8 @@ use super::instruction::Instruction;
 pub struct Cpu {
     registers: [u8; 8],
     flag_register: Flags,
+    stored_interrupt: bool,
+    volatile_interrupt: bool,
 }
 
 impl Cpu {
@@ -85,7 +87,26 @@ impl Cpu {
         }
 
         // Calculate and return the next instruction address
-        Ok((Cpu::calculate_next_instruction_address(inst, flags, self.flag_register.carry()) as usize, flags))
+        let next_address = self.calculate_next_instruction_address(inst, flags);
+
+        // Reset interrupts (stored only if MAC = 111)
+        self.volatile_interrupt = false;
+        if inst.get_address_control() == 0b11 &&
+           inst.get_next_instruction_address() & 0b00001 == 0b1 {
+            self.stored_interrupt = false;
+        }
+
+        Ok((next_address as usize, flags))
+    }
+
+    /// Enable the volatile interrupt (MAC 010) for the next instruction executed
+    pub fn trigger_volatile_interrupt(&mut self) {
+        self.volatile_interrupt = true;
+    }
+
+    /// Enable the stored interrupt (MAC 111) until used by any instruction
+    pub fn trigger_stored_interrupt(&mut self){
+        self.stored_interrupt = true;
     }
 
     /// Direct access to the registers.
@@ -98,10 +119,19 @@ impl Cpu {
         &mut self.flag_register
     }
 
+    /// Check if the volatile interrupt is active for the next instruction
+    pub fn check_volatile_interrupt(&self) -> bool {
+        self.volatile_interrupt
+    }
+
+    /// Check if the stored interrupt is active
+    pub fn check_stored_interrupt(&self) -> bool {
+        self.stored_interrupt
+    }
+
     /// Calculate the next instruction address based on the current instruction
     /// and the flags.
-    fn calculate_next_instruction_address(inst: Instruction, flags: Flags,
-        stored_carry: bool) -> u8 {
+    fn calculate_next_instruction_address(&self, inst: Instruction, flags: Flags) -> u8 {
         let next_address = inst.get_next_instruction_address();
         let next_address_base = next_address & 0b11110; // Mask off last bit
 
@@ -110,10 +140,10 @@ impl Cpu {
                 next_address
             }
             0b010 => {
-                next_address_base | 0b00001
+                next_address_base | self.volatile_interrupt as u8
             }
             0b011 => {
-                next_address_base | stored_carry as u8
+                next_address_base | self.flag_register.carry() as u8
             }
             0b100 => {
                 next_address_base | flags.carry() as u8
@@ -125,7 +155,7 @@ impl Cpu {
                 next_address_base | flags.negative() as u8
             }
             0b111 => {
-                next_address_base
+                next_address_base | self.stored_interrupt as u8
             }
             _ => {
                 panic!("Invalid address control")
@@ -144,43 +174,46 @@ mod tests {
     #[test]
     fn address_calculation() {
         // Helper function to keep asserts short
-        let na = |inst: u32, flag_register, carry| {
+        let na = |inst: u32, flags, carry, volatile_int, stored_int| {
             let inst = Instruction::new(inst << 18).unwrap();
-            let result = Cpu::calculate_next_instruction_address(inst, flag_register, carry);
-            result
+            let mut cpu = Cpu::default();
+            cpu.volatile_interrupt = volatile_int;
+            cpu.stored_interrupt = stored_int;
+            cpu.flag_register = Flags::new(carry, false, false);
+            cpu.calculate_next_instruction_address(inst, flags)
         };
 
         // No modification
-        assert_eq!(na(0b00_00000, Flags::new(false, false, false), false), 0b00000);
-        assert_eq!(na(0b00_11100, Flags::new(false, false, false), false), 0b11100);
-        assert_eq!(na(0b00_11111, Flags::new(false, false, false), false), 0b11111);
-        assert_eq!(na(0b00_00000, Flags::new( true,  true,  true),  true), 0b00000);
-        assert_eq!(na(0b00_11100, Flags::new( true,  true,  true),  true), 0b11100);
-        assert_eq!(na(0b00_11111, Flags::new( true,  true,  true),  true), 0b11111);
+        assert_eq!(na(0b00_00000, Flags::new(false, false, false), false, false, false), 0b00000);
+        assert_eq!(na(0b00_11100, Flags::new(false, false, false), false, false, false), 0b11100);
+        assert_eq!(na(0b00_11111, Flags::new(false, false, false), false, false, false), 0b11111);
+        assert_eq!(na(0b00_00000, Flags::new( true,  true,  true),  true, false, false), 0b00000);
+        assert_eq!(na(0b00_11100, Flags::new( true,  true,  true),  true, false, false), 0b11100);
+        assert_eq!(na(0b00_11111, Flags::new( true,  true,  true),  true, false, false), 0b11111);
 
-        // Set last bit to 1
-        assert_eq!(na(0b01_11110, Flags::new(false, false, false), false), 0b11111);
-        assert_eq!(na(0b01_11110, Flags::new( true,  true,  true),  true), 0b11111);
+        // Set last bit to the volatile interrupt
+        assert_eq!(na(0b01_11110, Flags::new(false, false, false), false, false, false), 0b11110);
+        assert_eq!(na(0b01_11110, Flags::new(false, false, false), false, true, false), 0b11111);
 
         // Set last bit to stored carry
-        assert_eq!(na(0b01_11111, Flags::new(false, false, false), false), 0b11110);
-        assert_eq!(na(0b01_11111, Flags::new(false, false, false),  true), 0b11111);
+        assert_eq!(na(0b01_11111, Flags::new(false, false, false), false, false, false), 0b11110);
+        assert_eq!(na(0b01_11111, Flags::new(false, false, false),  true, false, false), 0b11111);
 
         // Set last bit to carry out
-        assert_eq!(na(0b10_11110, Flags::new(false, false, false), false), 0b11110);
-        assert_eq!(na(0b10_11110, Flags::new( true, false, false), false), 0b11111);
+        assert_eq!(na(0b10_11110, Flags::new(false, false, false), false, false, false), 0b11110);
+        assert_eq!(na(0b10_11110, Flags::new( true, false, false), false, false, false), 0b11111);
 
         // Set last bit to zero out
-        assert_eq!(na(0b10_11111, Flags::new(false, false, false), false), 0b11110);
-        assert_eq!(na(0b10_11111, Flags::new(false, false,  true), false), 0b11111);
+        assert_eq!(na(0b10_11111, Flags::new(false, false, false), false, false, false), 0b11110);
+        assert_eq!(na(0b10_11111, Flags::new(false, false,  true), false, false, false), 0b11111);
 
         // Set last bit to negative out
-        assert_eq!(na(0b11_11110, Flags::new(false, false, false), false), 0b11110);
-        assert_eq!(na(0b11_11110, Flags::new(false,  true, false), false), 0b11111);
+        assert_eq!(na(0b11_11110, Flags::new(false, false, false), false, false, false), 0b11110);
+        assert_eq!(na(0b11_11110, Flags::new(false,  true, false), false, false, false), 0b11111);
 
-        // Set last bit to 0
-        assert_eq!(na(0b11_11111, Flags::new(false, false, false), false), 0b11110);
-        assert_eq!(na(0b11_11111, Flags::new(false,  true, false), false), 0b11110);
+        // Set last bit to the stored interrupt
+        assert_eq!(na(0b11_11111, Flags::new(false, false, false), false, false, false), 0b11110);
+        assert_eq!(na(0b11_11111, Flags::new(false, false, false), false, false,  true), 0b11111);
     }
 
     #[test]
