@@ -67,7 +67,9 @@ to the output register `FE`.
 
 Any character but `0`, `1` and `:` is ignored inside commands and can be used
 for formatting. Every command can optionally be prefixed with its address
-followed by `:`. An empty line and everything after `#` is ignored.
+followed by `:`. These must be strictly nondecreasing. Commands without an
+explicit address are assinged the next one. An empty line and everything after
+`#` is ignored.
 
 ## Documentation
 

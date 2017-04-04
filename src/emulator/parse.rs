@@ -17,7 +17,8 @@ use super::instruction::Instruction;
 ///
 /// Instructions can optionally be given an explicit address by prefixing them
 /// with the binary representation of the address followed by `:`. Instructions
-/// without an explicit address are saved at the first unused address.
+/// without an explicit address are saved at the next unused address. All
+/// addresses must be strictly nondecreasing.
 ///
 /// # Examples
 ///
@@ -128,6 +129,7 @@ pub fn read_reachable_program<R: Read>(reader: R) -> Result<Vec<(u8, Instruction
 /// For details on the syntax of the string representation see `read_program`.
 fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
     let mut instructions = [None; 32];
+    let mut min_address = 0;
     let explicit_address = Regex::new(r"^(?P<addr>[01]{5})\s*:\s*(?P<inst>.*)$").unwrap();
 
     let reader = BufReader::new(reader);
@@ -163,22 +165,29 @@ fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
         let raw_inst = convert_binary_string_to_int(&instruction);
         let instruction = try!(Instruction::new(raw_inst));
 
-        if let Some(address) = address {
+        min_address = if let Some(address) = address {
             // Parse specified address
             let address = convert_binary_string_to_int(&address) as usize;
             if address >= 32 {
                 return Err(Error::Parse("Specified instruction address too big"));
             }
 
+            if address < min_address {
+                return Err(Error::Parse("Addresses must be nondecreasing"));
+            }
+
             if instructions[address].is_none() {
                 instructions[address] = Some(instruction);
+                address + 1
             } else {
                 return Err(Error::Parse("Two instructions with the same address"));
             }
         } else {
-            // Find the next free address
-            if let Some(address) = instructions.iter().position(|i| i.is_none()) {
+            // Use the min_address when not given explicitly
+            let address = min_address;
+            if address < 32 {
                 instructions[address] = Some(instruction);
+                address + 1
             } else {
                 return Err(Error::Parse("Too many instructions in this program"));
             }
@@ -221,7 +230,6 @@ mod tests {
             00000: 00 00001 000000000000000000 # first instruction\n\
           \n       00 00011 000000000000000000# second instruction\n\
             00011: 00 11111 000000000000000000\n\
-            # the following instruction ends up in 00010, not 00100!\
           \n       00 00000 000000000000000000\n\
             11111 : 00 00011 | 00 | 000 1111 01 | 01 0100 | 0\n\
         ".to_owned())).unwrap();
@@ -229,8 +237,8 @@ mod tests {
         assert_eq!(program.iter().filter_map(|e| *e).collect::<Vec<_>>().as_slice(), &[
             Instruction::new(0b00_00001_000000000000000000).unwrap(),
             Instruction::new(0b00_00011_000000000000000000).unwrap(),
-            Instruction::new(0b00_00000_000000000000000000).unwrap(),
             Instruction::new(0b00_11111_000000000000000000).unwrap(),
+            Instruction::new(0b00_00000_000000000000000000).unwrap(),
             Instruction::new(0b00_00011_000001111010101000).unwrap(),
         ]);
     }
@@ -240,6 +248,24 @@ mod tests {
     fn invalid_address() {
         let _ = parse_instructions(Cursor::new("\
             0 0 0 0 0: 00 00001 000000000000000000\n\
+        ".to_owned())).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Addresses must be nondecreasing")]
+    fn decreasing_address() {
+        let _ = parse_instructions(Cursor::new("\
+            00001: 00 00000 000000000000000000\n\
+            00000: 00 00001 000000000000000000\n\
+        ".to_owned())).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Too many instructions in this program")]
+    fn overflowing_address() {
+        let _ = parse_instructions(Cursor::new("\
+            11111: 00 00000 000000000000000000\n\
+                   00 00000 000000000000000000\n\
         ".to_owned())).unwrap();
     }
 
