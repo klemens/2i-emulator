@@ -208,6 +208,9 @@ impl Instruction {
         let address_control = if self.get_address_control() == 0 &&
             address.map(|a| a + 1) == Some(next_address as usize) {
             String::new()
+        } else if self.get_address_control() == 0 &&
+                  address == Some(next_address as usize) {
+            "; LOOP".to_string()
         } else {
             let next_address_base = next_address >> 1; // Cut off last bit
 
@@ -323,9 +326,10 @@ mod tests {
     #[test]
     fn to_string() {
         let testcases = [
-            (0b00_00000_00_000_0000_00_00_0000_0, "NOP; JMP 00000", Some(0)),
             (0b00_00001_00_000_0000_00_00_0000_0, "NOP", Some(0)),
             (0b00_00011_00_000_0000_00_00_0000_0, "NOP", Some(2)),
+            (0b00_00000_00_000_0000_00_00_0000_0, "NOP; LOOP", Some(0)),
+            (0b00_00010_00_000_0000_00_00_0000_0, "NOP; LOOP", Some(2)),
             (0b00_00000_00_000_0000_00_00_0000_0, "NOP; JMP 00000", None),
             (0b01_00000_00_000_0000_00_00_0000_0, "NOP; INTA 0000I", None),
             (0b11_00001_00_000_0000_00_00_0000_0, "NOP; INTB 0000I", None),
@@ -359,6 +363,7 @@ mod tests {
             (0b00_00001_00_000_1111_01_01_1011_0, "R0 = R0 ?> 1", Some(0)),
             (0b00_00001_00_000_1100_01_01_1100_0, "R0 = FC", Some(0)),
             (0b00_00000_00_000_1100_01_01_1100_0, "R0 = FC; JMP 00000", None),
+            (0b00_00000_00_000_1100_01_01_1100_0, "R0 = FC; LOOP", Some(0)),
             (0b00_00000_00_000_1100_01_01_1100_0, "R0 = FC; JMP 00000", Some(1)),
             (0b00_00001_11_001_0010_00_00_1100_0, "(R1) = R2", Some(0)),
             (0b00_00001_11_001_0011_01_01_1100_0, "(R1),R1 = 3", Some(0)),
