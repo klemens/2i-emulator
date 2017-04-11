@@ -114,6 +114,12 @@ impl Instruction {
         self.extract_bit_pattern(0b11, 23)
     }
 
+    /// MAC1-0 + NA0 (3 bit)
+    pub fn get_full_address_control(&self) -> u8 {
+        self.get_address_control() << 1
+            | (self.get_next_instruction_address() & 0b00001)
+    }
+
     fn extract_bit(&self, position: u8) -> bool {
         return self.instruction & 0b1 << position != 0;
     }
@@ -205,7 +211,7 @@ impl Instruction {
             let next_address = self.get_next_instruction_address();
             let next_address_base = next_address >> 1; // Cut off last bit
 
-            match self.get_address_control() << 1 | (next_address & 0b00001) {
+            match self.get_full_address_control() {
                 0b000 | 0b001 => format!("; JMP {:05b}", next_address),
                 0b010 => format!("; INTA {:04b}I", next_address_base),
                 0b011 => format!("; CF {:04b}C", next_address_base),
@@ -224,8 +230,12 @@ impl Instruction {
             String::new()
         };
 
-        if self.instruction & 0b1100000111111111111111110 == 0 {
+        let mac = self.get_address_control();
+        let mac_full = self.get_full_address_control();
+        if self.instruction & 0b0000000111111111111111110 == 0 &&
+           (mac == 0b00 || mac_full == 0b010 || mac_full == 0b111) {
             // NOP if everything except NA and CHFL is zero
+            // or if full NA specifies an interrupt as source
             format!("NOP{}{}", address_control, change_flags)
         } else {
             format!("{}{}{}{}", output, result, address_control, change_flags)
@@ -314,7 +324,10 @@ mod tests {
     fn to_string() {
         let testcases = [
             (0b00_00000_00_000_0000_00_00_0000_0, "NOP", Some(0)),
+            (0b00_00001_00_000_0000_00_00_0000_0, "NOP", Some(1)),
             (0b00_00000_00_000_0000_00_00_0000_0, "NOP; JMP 00000", None),
+            (0b01_00000_00_000_0000_00_00_0000_0, "NOP; INTA 0000I", None),
+            (0b11_00001_00_000_0000_00_00_0000_0, "NOP; INTB 0000I", None),
             (0b00_00000_00_000_0000_00_00_0000_1, "NOP; CHFL", Some(0)),
             (0b00_00000_00_000_1111_01_01_0000_0, "R0 = R0 + FF; HLDC", Some(0)),
             (0b00_00000_00_000_0001_01_00_0000_0, "R0 = R0 + R1; HLDC", Some(0)),

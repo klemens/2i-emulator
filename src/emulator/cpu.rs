@@ -135,7 +135,7 @@ impl Cpu {
         let next_address = inst.get_next_instruction_address();
         let next_address_base = next_address & 0b11110; // Mask off last bit
 
-        match inst.get_address_control() << 1 | (next_address & 0b00001) {
+        match inst.get_full_address_control() {
             0b000 | 0b001 => {
                 next_address
             }
