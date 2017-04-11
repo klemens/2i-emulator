@@ -18,7 +18,8 @@ use super::instruction::Instruction;
 /// Instructions can optionally be given an explicit address by prefixing them
 /// with the binary representation of the address followed by `:`. Instructions
 /// without an explicit address are saved at the next unused address. All
-/// addresses must be strictly nondecreasing.
+/// addresses must be strictly nondecreasing. Missing instructions are replaced
+/// with self-looping instructions.
 ///
 /// # Examples
 ///
@@ -31,8 +32,14 @@ use super::instruction::Instruction;
 pub fn read_program<R: Read>(reader: R) -> Result<[Instruction; 32]> {
     let instructions = parse_instructions(reader)?;
 
-    // Replace all None values with zero instructions and remove the Option
     let mut final_instructions = [Instruction::default(); 32];
+
+    // Fill the array with looping instructions
+    for (address, instruction) in final_instructions.iter_mut().enumerate() {
+        *instruction = Instruction::new_looping(address).unwrap();
+    }
+
+    // Copy the loaded program into the array at the right addresses
     for (i, instruction) in instructions.iter().enumerate() {
         if let &Some(instruction) = instruction {
             final_instructions[i] = instruction;
@@ -118,7 +125,7 @@ pub fn read_reachable_program<R: Read>(reader: R) -> Result<Vec<(u8, Instruction
     Ok(reachable_instructions.iter().enumerate().filter_map(|(i,inst)| {
         match *inst {
             S::Empty => None,
-            S::Visited => Some((i as u8, Instruction::default())),
+            S::Visited => Some((i as u8, Instruction::new_looping(i).unwrap())),
             S::Instruction(inst) => Some((i as u8, inst)),
         }
     }).collect())
@@ -267,6 +274,31 @@ mod tests {
             11111: 00 00000 000000000000000000\n\
                    00 00000 000000000000000000\n\
         ".to_owned())).unwrap();
+    }
+
+    #[test]
+    fn fill_with_looping() {
+        let program = Cursor::new("\
+            00000: 00 00001 000000000000000000\n\
+        ".to_owned());
+        assert_eq!(read_reachable_program(program).unwrap().as_slice(), &[
+            (0, Instruction::new(0b00_00001_000000000000000000).unwrap()),
+            (1, Instruction::new(0b00_00001_000000000000000000).unwrap()),
+        ]);
+
+        let program = "\
+            00010: 00 00000 000000000000000000\n\
+        ".to_owned();
+        assert_eq!(&read_program(Cursor::new(&program)).unwrap()[..4], &[
+            (Instruction::new(0b00_00000_000000000000000000).unwrap()),
+            (Instruction::new(0b00_00001_000000000000000000).unwrap()),
+            (Instruction::new(0b00_00000_000000000000000000).unwrap()),
+            (Instruction::new(0b00_00011_000000000000000000).unwrap()),
+        ]);
+        assert_eq!(&read_program(Cursor::new(&program)).unwrap()[30..], &[
+            (Instruction::new(0b00_11110_000000000000000000).unwrap()),
+            (Instruction::new(0b00_11111_000000000000000000).unwrap()),
+        ]);
     }
 
     #[test]

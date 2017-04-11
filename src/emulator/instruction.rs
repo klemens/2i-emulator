@@ -36,6 +36,14 @@ impl Instruction {
         }
     }
 
+    pub fn new_looping(address: usize) -> Result<Instruction> {
+        if address < 32 {
+            Self::new((address as u32) << 18)
+        } else {
+            Err(Error::Instruction("Given address to large"))
+        }
+    }
+
     /// Get the instruction as a 25 bit integer (the first 7 most significant
     /// bits of the u32 are always zero)
     pub fn get_instruction(&self) -> u32 {
@@ -295,6 +303,21 @@ mod tests {
         assert_eq!(i1.is_bus_writable(), false);
         assert_eq!(i1.get_next_instruction_address(), 0b00010);
         assert_eq!(i1.get_address_control(), 0b00);
+    }
+
+    #[test]
+    fn looping() {
+        let testcases = [
+            (0b00000, 0b00_00000_000000000000000000),
+            (0b00001, 0b00_00001_000000000000000000),
+            (0b11111, 0b00_11111_000000000000000000),
+        ];
+
+        for &(a, i) in testcases.iter() {
+            assert_eq!(Instruction::new_looping(a).ok(), Instruction::new(i).ok());
+        }
+
+        assert!(Instruction::new_looping(0b100000).is_err())
     }
 
     #[test]
