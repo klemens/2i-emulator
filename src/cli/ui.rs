@@ -20,7 +20,7 @@ pub fn status(computer: &mut Computer, io: &IoRegisters,
         (
             ellipsize_path(&program.path, 41),
             format_instruction(inst),
-            inst.to_text_paraphrase(Some(computer.instruction_pointer + 1)),
+            inst.to_mnemonic(Some(computer.instruction_pointer)),
         )
     } else {
         ("-".into(), "-".into(), "".into())
@@ -110,7 +110,7 @@ pub fn display_program(program: &Program) {
             continue;
         }
 
-        println!("{:05b}: {:30} {}", addr, inst.to_text_paraphrase(Some(addr + 1)),
+        println!("{:05b}: {:30} {}", addr, inst.to_mnemonic(Some(addr)),
             format_instruction(*inst));
     }
     println!();

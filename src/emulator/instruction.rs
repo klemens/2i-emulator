@@ -130,7 +130,7 @@ impl Instruction {
 
     /// Create a textual representation of the instruction
     ///
-    /// Optionally, the address of the next instruction after this one can be
+    /// Optionally, the address of the instruction inside the program can be
     /// passed to simplify the resulting string in many cases.
     ///
     /// # Examples
@@ -138,10 +138,10 @@ impl Instruction {
     /// ```
     /// use emulator::Instruction;
     ///
-    /// let inst = Instruction::new(0b00_00000_00_000_0110_01_01_0100_0).unwrap();
-    /// assert_eq!("R0 = R0 + 6", &inst.to_text_paraphrase(Some(0)));
+    /// let inst = Instruction::new(0b00_00001_00_000_0110_01_01_0100_0).unwrap();
+    /// assert_eq!("R0 = R0 + 6", &inst.to_mnemonic(Some(0)));
     /// ```
-    pub fn to_text_paraphrase(&self, next_address: Option<usize>) -> String {
+    pub fn to_mnemonic(&self, address: Option<usize>) -> String {
         // Determine input a
         let a = if self.is_alu_input_a_bus() {
             format!("(R{})", self.get_register_address_a())
@@ -204,11 +204,11 @@ impl Instruction {
         };
 
         // Determine address control and next address
+        let next_address = self.get_next_instruction_address();
         let address_control = if self.get_address_control() == 0 &&
-            next_address == Some(self.get_next_instruction_address() as usize) {
+            address.map(|a| a + 1) == Some(next_address as usize) {
             String::new()
         } else {
-            let next_address = self.get_next_instruction_address();
             let next_address_base = next_address >> 1; // Cut off last bit
 
             match self.get_full_address_control() {
@@ -323,52 +323,53 @@ mod tests {
     #[test]
     fn to_string() {
         let testcases = [
-            (0b00_00000_00_000_0000_00_00_0000_0, "NOP", Some(0)),
-            (0b00_00001_00_000_0000_00_00_0000_0, "NOP", Some(1)),
+            (0b00_00000_00_000_0000_00_00_0000_0, "NOP; JMP 00000", Some(0)),
+            (0b00_00001_00_000_0000_00_00_0000_0, "NOP", Some(0)),
+            (0b00_00011_00_000_0000_00_00_0000_0, "NOP", Some(2)),
             (0b00_00000_00_000_0000_00_00_0000_0, "NOP; JMP 00000", None),
             (0b01_00000_00_000_0000_00_00_0000_0, "NOP; INTA 0000I", None),
             (0b11_00001_00_000_0000_00_00_0000_0, "NOP; INTB 0000I", None),
-            (0b00_00000_00_000_0000_00_00_0000_1, "NOP; CHFL", Some(0)),
-            (0b00_00000_00_000_1111_01_01_0000_0, "R0 = R0 + FF; HLDC", Some(0)),
-            (0b00_00000_00_000_0001_01_00_0000_0, "R0 = R0 + R1; HLDC", Some(0)),
-            (0b00_00000_00_000_0000_01_00_0000_0, "R0 = R0 << 1; HLDC", Some(0)),
-            (0b00_00000_00_000_0000_00_00_0001_0, "TEST R0", Some(0)),
-            (0b00_00000_01_000_0000_01_10_0001_0, "R0 = (R0)", Some(0)),
+            (0b00_00001_00_000_0000_00_00_0000_1, "NOP; CHFL", Some(0)),
+            (0b00_00001_00_000_1111_01_01_0000_0, "R0 = R0 + FF; HLDC", Some(0)),
+            (0b00_00001_00_000_0001_01_00_0000_0, "R0 = R0 + R1; HLDC", Some(0)),
+            (0b00_00001_00_000_0000_01_00_0000_0, "R0 = R0 << 1; HLDC", Some(0)),
+            (0b00_00001_00_000_0000_00_00_0001_0, "TEST R0", Some(0)),
+            (0b00_00001_01_000_0000_01_10_0001_0, "R0 = (R0)", Some(0)),
             (0b01_00010_00_000_0000_00_00_0001_0, "TEST R0; INTA 0001I", None),
             (0b01_00101_00_000_0000_00_00_0001_0, "TEST R0; CF 0010C", None),
             (0b10_00110_00_000_0000_00_00_0001_0, "TEST R0; CO 0011C", None),
             (0b10_01001_00_000_0000_00_00_0001_0, "TEST R0; ZO 0100Z", None),
             (0b11_01010_00_000_0000_00_00_0001_0, "TEST R0; NO 0101N", None),
             (0b11_01101_00_000_0000_00_00_0001_0, "TEST R0; INTB 0110I", None),
-            (0b00_00000_00_000_1111_01_01_0010_0, "R0 = R0 NOR FF", Some(0)),
-            (0b00_00000_00_000_0000_01_00_0010_0, "R0 = ¬R0", Some(0)),
-            (0b00_00000_00_010_0000_01_00_0011_0, "R2 = 0", Some(0)),
-            (0b00_00000_00_000_1111_01_01_0100_0, "R0 = R0 + FF", Some(0)),
-            (0b00_00000_00_000_0001_01_00_0100_0, "R0 = R0 + R1", Some(0)),
-            (0b00_00000_00_000_0000_01_00_0100_0, "R0 = R0 << 1", Some(0)),
-            (0b00_00000_00_000_1111_01_01_0101_0, "R0 = R0 + FF + 1", Some(0)),
-            (0b00_00000_00_000_0000_01_00_0101_0, "R0 = (R0 << 1) + 1", Some(0)),
-            (0b00_00000_00_000_1111_01_01_0110_0, "R0 = R0 + FF + C", Some(0)),
-            (0b00_00000_00_000_0000_01_00_0110_0, "R0 = (R0 << 1) + C", Some(0)),
-            (0b00_00000_00_000_1111_01_01_0111_0, "R0 = R0 + FF + ¬C", Some(0)),
-            (0b00_00000_00_000_0000_01_00_0111_0, "R0 = (R0 << 1) + ¬C", Some(0)),
-            (0b00_00000_00_000_1111_01_01_1000_0, "R0 = R0 >> 1", Some(0)),
-            (0b00_00000_00_000_1111_01_01_1001_0, "R0 = R0 R> 1", Some(0)),
-            (0b00_00000_00_000_1111_01_01_1010_0, "R0 = R0 C> 1", Some(0)),
-            (0b00_00000_00_000_1111_01_01_1011_0, "R0 = R0 ?> 1", Some(0)),
-            (0b00_00000_00_000_1100_01_01_1100_0, "R0 = FC", Some(0)),
+            (0b00_00001_00_000_1111_01_01_0010_0, "R0 = R0 NOR FF", Some(0)),
+            (0b00_00001_00_000_0000_01_00_0010_0, "R0 = ¬R0", Some(0)),
+            (0b00_00001_00_010_0000_01_00_0011_0, "R2 = 0", Some(0)),
+            (0b00_00001_00_000_1111_01_01_0100_0, "R0 = R0 + FF", Some(0)),
+            (0b00_00001_00_000_0001_01_00_0100_0, "R0 = R0 + R1", Some(0)),
+            (0b00_00001_00_000_0000_01_00_0100_0, "R0 = R0 << 1", Some(0)),
+            (0b00_00001_00_000_1111_01_01_0101_0, "R0 = R0 + FF + 1", Some(0)),
+            (0b00_00001_00_000_0000_01_00_0101_0, "R0 = (R0 << 1) + 1", Some(0)),
+            (0b00_00001_00_000_1111_01_01_0110_0, "R0 = R0 + FF + C", Some(0)),
+            (0b00_00001_00_000_0000_01_00_0110_0, "R0 = (R0 << 1) + C", Some(0)),
+            (0b00_00001_00_000_1111_01_01_0111_0, "R0 = R0 + FF + ¬C", Some(0)),
+            (0b00_00001_00_000_0000_01_00_0111_0, "R0 = (R0 << 1) + ¬C", Some(0)),
+            (0b00_00001_00_000_1111_01_01_1000_0, "R0 = R0 >> 1", Some(0)),
+            (0b00_00001_00_000_1111_01_01_1001_0, "R0 = R0 R> 1", Some(0)),
+            (0b00_00001_00_000_1111_01_01_1010_0, "R0 = R0 C> 1", Some(0)),
+            (0b00_00001_00_000_1111_01_01_1011_0, "R0 = R0 ?> 1", Some(0)),
+            (0b00_00001_00_000_1100_01_01_1100_0, "R0 = FC", Some(0)),
             (0b00_00000_00_000_1100_01_01_1100_0, "R0 = FC; JMP 00000", None),
             (0b00_00000_00_000_1100_01_01_1100_0, "R0 = FC; JMP 00000", Some(1)),
-            (0b00_00000_11_001_0010_00_00_1100_0, "(R1) = R2", Some(0)),
-            (0b00_00000_11_001_0011_01_01_1100_0, "(R1),R1 = 3", Some(0)),
-            (0b00_00000_00_000_1100_01_01_1101_0, "R0 = FC; SETC", Some(0)),
-            (0b00_00000_00_000_1100_01_01_1110_0, "R0 = FC; HLDC", Some(0)),
-            (0b00_00000_00_000_1100_01_01_1111_0, "R0 = FC; INVC", Some(0)),
+            (0b00_00001_11_001_0010_00_00_1100_0, "(R1) = R2", Some(0)),
+            (0b00_00001_11_001_0011_01_01_1100_0, "(R1),R1 = 3", Some(0)),
+            (0b00_00001_00_000_1100_01_01_1101_0, "R0 = FC; SETC", Some(0)),
+            (0b00_00001_00_000_1100_01_01_1110_0, "R0 = FC; HLDC", Some(0)),
+            (0b00_00001_00_000_1100_01_01_1111_0, "R0 = FC; INVC", Some(0)),
             (0b00_00000_00_000_1100_01_01_1111_1, "R0 = FC; INVC; JMP 00000; CHFL", None),
         ];
 
         for &(i, s, na) in testcases.iter() {
-            assert_eq!(Instruction::new(i).unwrap().to_text_paraphrase(na), s.to_string());
+            assert_eq!(Instruction::new(i).unwrap().to_mnemonic(na), s.to_string());
         }
     }
 }

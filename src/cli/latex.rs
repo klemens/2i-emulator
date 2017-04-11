@@ -68,7 +68,7 @@ fn print_program(path: &Path, program: &Vec<(u8, Instruction)>) {
     for &(addr, inst) in program.iter() {
         println!("    {}&\\verb|{}|&{:05b}&{:02b}&{:05b}&{:01b}&{:01b}&{:03b}&{:04b}&{:01b}&{:01b}&{:01b}&{:01b}&{:04b}&{:01b}\\\\\\hline",
             addr,
-            inst.to_text_paraphrase(Some(addr as usize + 1)),
+            inst.to_mnemonic(Some(addr as usize)),
             addr,
             inst.get_address_control(),
             inst.get_next_instruction_address(),

@@ -39,7 +39,7 @@ pub fn main(args: &ArgMatches) -> Result<(), i32> {
         print!("{index};{address};\"{mnemonic}\";;{address:05b};",
             index = i,
             address = addr,
-            mnemonic = inst.to_text_paraphrase(Some(addr as usize + 1)),
+            mnemonic = inst.to_mnemonic(Some(addr as usize)),
         );
         println!("{:02b};{:05b};{};{};{:03b};{:04b};{};{};{};{};{:04b};{};",
             inst.get_address_control(),
