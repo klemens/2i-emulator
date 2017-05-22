@@ -6,6 +6,7 @@ extern crate emulator;
 extern crate regex;
 extern crate rustyline;
 
+mod cli;
 mod ipg;
 mod latex;
 mod ui;
@@ -13,7 +14,6 @@ mod ui;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
-use clap::{App, AppSettings, Arg, SubCommand};
 use regex::Regex;
 use rustyline::{CompletionType, Editor};
 
@@ -24,34 +24,11 @@ fn main() {
 }
 
 fn _main() -> Result<(), i32> {
-    let args = App::new("2i-emulator")
-        .version(crate_version!())
-        .setting(AppSettings::ArgsNegateSubcommands)
-        .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::VersionlessSubcommands)
-        .set_term_width(80)
-        .arg(Arg::with_name("2i-programm")
-            .help("Das zu ladende Mikroprogramm"))
-        .subcommand(SubCommand::with_name("ipg-csv")
-            .about("Konvertiere ein Programm in das ipg-csv-Format, das mit Hilfe von mcontrol auf den Minirechner geladen werden kann.")
-            .arg(Arg::with_name("2i-programm")
-                .help("Das zu konvertierende Mikroprogramm")
-                .required(true)))
-        .subcommand(SubCommand::with_name("latex")
-            .about("Erstelle ein LaTeX-Dokument mit einer übersichtlichen Darstellung der gegebenen Programme.")
-            .arg(Arg::with_name("autor")
-                .help("Autoren der Programme")
-                .long("autor")
-                .number_of_values(1)
-                .multiple(true))
-            .arg(Arg::with_name("2i-programm")
-                .help("Die darzustellenden Programme")
-                .required(true)
-                .multiple(true)))
-        .get_matches();
+    let args = cli::build().get_matches();
 
     // Execute subcommand instead of main program if specified
     match args.subcommand() {
+        ("completions", Some(args)) => return cli::gen_completions(args),
         ("ipg-csv", Some(args)) => return ipg::main(args),
         ("latex", Some(args)) => return latex::main(args),
         _ => (),
