@@ -24,6 +24,9 @@ provided for convenience.
 cargo build --release
 ```
 
+Note that you need at least rust 1.15.0. Use [`rustup`] on windows or if the
+packages of your distribution are too old.
+
 ## Usage
 
 You can specify the filename of the program you want to load as a parameter on
@@ -83,3 +86,4 @@ This program by Klemens Schölhorn is licenced under the terms of the GPLv3.
 
 [binaries]: https://github.com/klemens/2i-emulator/releases
 [api documentation]: https://klemens.github.io/2i-emulator/emulator/
+[`rustup`]: https://www.rustup.rs/
