@@ -22,7 +22,7 @@ pub fn main(args: &ArgMatches) -> Result<(), i32> {
               Adr.;2;N5;1;1;3;4;1;1;1;1;4;1;Comment",
         design_type = "0201",
         min_version = "1360",
-        max_version = "1369",
+        max_version = "1379",
     );
 
     // Print signature on second line (ignored by mcontrol)
