@@ -1,0 +1,10 @@
+##!/bin/sh
+
+
+##usage:
+
+# IMPORTANT! do not use ";" in any of the cells which are chronological before your cells with the 25bits
+# export your csv with ";" as seperator.
+# ./cleanupcsv origin.csv target.2i (be careful not to override your origin ;)
+
+awk -F ";" '{print $14":"$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26}' $1 | egrep "([0-9]){5}:([0-9])+" > $2;
