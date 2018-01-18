@@ -51,7 +51,7 @@ pub fn main(args: &ArgMatches) -> Result<(), i32> {
         }
         lines_remaining -= program.len() + 2;
 
-        print_program(&path, &program);
+        print_program(&path.to_string_lossy(), &program);
     }
 
     // Print the footer of the latex template
@@ -60,10 +60,10 @@ pub fn main(args: &ArgMatches) -> Result<(), i32> {
     Ok(())
 }
 
-fn print_program(path: &Path, program: &Vec<(u8, Instruction)>) {
+fn print_program(filename: &str, program: &Vec<(u8, Instruction)>) {
     println!();
-    println!("    % Generated from {}", path.display());
-    println!("    \\multicolumn{{15}}{{l}}{{}}\\\\\\multicolumn{{15}}{{l}}{{\\textbf{{{}}}}}\\\\\\hline", path.display());
+    println!("    % Generated from {}", filename);
+    println!("    \\multicolumn{{15}}{{l}}{{}}\\\\\\multicolumn{{15}}{{l}}{{\\textbf{{{}}}}}\\\\\\hline", escape_latex(filename));
 
     for &(addr, inst) in program.iter() {
         println!("    {}&\\verb|{}|&{:05b}&{:02b}&{:05b}&{:01b}&{:01b}&{:03b}&{:04b}&{:01b}&{:01b}&{:01b}&{:01b}&{:04b}&{:01b}\\\\\\hline",
@@ -83,4 +83,26 @@ fn print_program(path: &Path, program: &Vec<(u8, Instruction)>) {
             inst.get_alu_instruction(),
             inst.should_store_flags() as u8);
     }
+}
+
+fn escape_latex(string: &str) -> String {
+    let mut result = String::with_capacity(string.len());
+
+    for char in string.chars() {
+        match char {
+            '&' => result.push_str("\\&"),
+            '%' => result.push_str("\\%"),
+            '$' => result.push_str("\\$"),
+            '#' => result.push_str("\\#"),
+            '_' => result.push_str("\\_"),
+            '{' => result.push_str("\\{"),
+            '}' => result.push_str("\\}"),
+            '~' => result.push_str("\\textasciitilde{}"),
+            '^' => result.push_str("\\textasciicircum{}"),
+            '\\' => result.push_str("\\textbackslash{}"),
+            _ => result.push(char),
+        }
+    }
+
+    result
 }
