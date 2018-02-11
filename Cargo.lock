@@ -1,6 +1,6 @@
 [[package]]
 name = "2i-emulator"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "chrono 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.29.4 (registry+https://github.com/rust-lang/crates.io-index)",
