@@ -105,11 +105,6 @@ pub fn display_ram(ram: &Ram) {
 pub fn display_program(program: &Program) {
     println!();
     for (addr, inst) in program.instructions.iter().enumerate() {
-        // Ignore "NOP; JMP 00000" instructions
-        if inst.get_instruction() == 0 {
-            continue;
-        }
-
         println!("{:05b}: {:30} {}", addr, inst.to_mnemonic(Some(addr)),
             format_instruction(*inst));
     }
