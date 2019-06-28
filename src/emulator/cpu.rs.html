@@ -1,48 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `src/emulator/cpu.rs`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang">
-
-    <title>cpu.rs.html -- source</title>
-
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
-    
-
-    
-    
-</head>
-<body class="rustdoc">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        
-        
-    </nav>
-
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/emulator/cpu.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cpu.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../emulator/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -277,302 +233,351 @@
 <span id="233">233</span>
 <span id="234">234</span>
 <span id="235">235</span>
-</pre><pre class='rust '>
-<span class='doccomment'>//! The 2i cpu.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! This module contains the cpu used in the 2i.</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! The 2i cpu.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This module contains the cpu used in the 2i.</span>
 
-<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>Error</span>, <span class='prelude-ty'>Result</span>};
-<span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>alu</span>::{<span class='ident'>Alu</span>, <span class='ident'>Flags</span>};
-<span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>bus</span>::<span class='ident'>Bus</span>;
-<span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>instruction</span>::<span class='ident'>Instruction</span>;
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">alu</span>::{<span class="ident">Alu</span>, <span class="ident">Flags</span>};
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">bus</span>::<span class="ident">Bus</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">instruction</span>::<span class="ident">Instruction</span>;
 
-<span class='doccomment'>/// Cpu of the 2i.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Represents the 8 bit cpu of the 2i with 8 registers that are 8 bit wide and</span>
-<span class='doccomment'>/// the three status registers (carry, negative, zero).</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// use emulator::{Cpu, Instruction, Ram};</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// let mut cpu = Cpu::new();</span>
-<span class='doccomment'>/// let mut ram = Ram::new();</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// // R0 = 6</span>
-<span class='doccomment'>/// let inst = Instruction::new(0b00_00000_00_000_0110_01_01_0001_0).unwrap();</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// let _ = cpu.execute_instruction(inst, &amp;mut ram);</span>
-<span class='doccomment'>/// assert_eq!(6, cpu.inspect_registers()[0]);</span>
-<span class='doccomment'>/// ```</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Default</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Cpu</span> {
-    <span class='ident'>registers</span>: [<span class='ident'>u8</span>; <span class='number'>8</span>],
-    <span class='ident'>flag_register</span>: <span class='ident'>Flags</span>,
+<span class="doccomment">/// Cpu of the 2i.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Represents the 8 bit cpu of the 2i with 8 registers that are 8 bit wide and</span>
+<span class="doccomment">/// the three status registers (carry, negative, zero).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use emulator::{Cpu, Instruction, Ram};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let mut cpu = Cpu::new();</span>
+<span class="doccomment">/// let mut ram = Ram::new();</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // R0 = 6</span>
+<span class="doccomment">/// let inst = Instruction::new(0b00_00000_00_000_0110_01_01_1100_0).unwrap();</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let _ = cpu.execute_instruction(inst, &amp;mut ram);</span>
+<span class="doccomment">/// assert_eq!(6, cpu.inspect_registers()[0]);</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cpu</span> {
+    <span class="ident">registers</span>: [<span class="ident">u8</span>; <span class="number">8</span>],
+    <span class="ident">flag_register</span>: <span class="ident">Flags</span>,
+    <span class="ident">stored_interrupt</span>: <span class="ident">bool</span>,
+    <span class="ident">volatile_interrupt</span>: <span class="ident">bool</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>Cpu</span> {
-    <span class='doccomment'>/// Create a new cpu with all registers and flags set to zero.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>Cpu</span> {
-        <span class='ident'>Cpu</span>::<span class='ident'>default</span>()
+<span class="kw">impl</span> <span class="ident">Cpu</span> {
+    <span class="doccomment">/// Create a new cpu with all registers and flags set to zero.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">Cpu</span> {
+        <span class="ident">Cpu</span>::<span class="ident">default</span>()
     }
 
-    <span class='doccomment'>/// Execute the given instruction on the cpu using the given, bus, input</span>
-    <span class='doccomment'>/// and output. Returns the address of the next instruction and the alu flags.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>execute_instruction</span><span class='op'>&lt;</span><span class='ident'>B</span>: <span class='ident'>Bus</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>inst</span>: <span class='ident'>Instruction</span>, <span class='ident'>bus</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>B</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>Flags</span>)<span class='op'>&gt;</span> {
-        <span class='comment'>// Determine alu input a (bus or register)</span>
-        <span class='kw'>let</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>is_alu_input_a_bus</span>() {
-            <span class='kw'>if</span> <span class='op'>!</span> <span class='ident'>inst</span>.<span class='ident'>is_bus_enabled</span>() {
-                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>Cpu</span>(<span class='string'>&quot;Cannot read from disabled bus&quot;</span>));
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>is_bus_writable</span>() {
-                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>Cpu</span>(<span class='string'>&quot;Cannot read from bus while it is in write mode&quot;</span>));
+    <span class="doccomment">/// Execute the given instruction on the cpu using the given, bus, input</span>
+    <span class="doccomment">/// and output. Returns the address of the next instruction and the alu flags.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute_instruction</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">Bus</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">inst</span>: <span class="ident">Instruction</span>, <span class="ident">bus</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">B</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Flags</span>)<span class="op">&gt;</span> {
+        <span class="comment">// Determine alu input a (bus or register)</span>
+        <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">is_alu_input_a_bus</span>() {
+            <span class="kw">if</span> <span class="op">!</span> <span class="ident">inst</span>.<span class="ident">is_bus_enabled</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Cpu</span>(<span class="string">&quot;Cannot read from disabled bus&quot;</span>));
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">is_bus_writable</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Cpu</span>(<span class="string">&quot;Cannot read from bus while it is in write mode&quot;</span>));
             }
 
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>bus</span>.<span class='ident'>read</span>(<span class='self'>self</span>.<span class='ident'>registers</span>[<span class='ident'>inst</span>.<span class='ident'>get_register_address_a</span>()]))
-        } <span class='kw'>else</span> {
-            <span class='self'>self</span>.<span class='ident'>registers</span>[<span class='ident'>inst</span>.<span class='ident'>get_register_address_a</span>()]
+            <span class="ident">bus</span>.<span class="ident">read</span>(<span class="self">self</span>.<span class="ident">registers</span>[<span class="ident">inst</span>.<span class="ident">get_register_address_a</span>()])<span class="question-mark">?</span>
+        } <span class="kw">else</span> {
+            <span class="self">self</span>.<span class="ident">registers</span>[<span class="ident">inst</span>.<span class="ident">get_register_address_a</span>()]
         };
 
-        <span class='comment'>// Determine alu input b (constant or register)</span>
-        <span class='kw'>let</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>is_alu_input_b_const</span>() {
-            <span class='ident'>inst</span>.<span class='ident'>get_constant_input</span>()
-        } <span class='kw'>else</span> {
-            <span class='self'>self</span>.<span class='ident'>registers</span>[<span class='ident'>inst</span>.<span class='ident'>get_register_address_b</span>()]
+        <span class="comment">// Determine alu input b (constant or register)</span>
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">is_alu_input_b_const</span>() {
+            <span class="ident">inst</span>.<span class="ident">get_constant_input</span>()
+        } <span class="kw">else</span> {
+            <span class="self">self</span>.<span class="ident">registers</span>[<span class="ident">inst</span>.<span class="ident">get_register_address_b</span>()]
         };
 
-        <span class='comment'>// Calculate result using alu</span>
-        <span class='kw'>let</span> (<span class='ident'>result</span>, <span class='ident'>flags</span>) <span class='op'>=</span> <span class='ident'>Alu</span>::<span class='ident'>calculate</span>(<span class='ident'>inst</span>.<span class='ident'>get_alu_instruction</span>(), <span class='ident'>a</span>, <span class='ident'>b</span>,
-            <span class='self'>self</span>.<span class='ident'>flag_register</span>.<span class='ident'>carry</span>());
+        <span class="comment">// Calculate result using alu</span>
+        <span class="kw">let</span> (<span class="ident">result</span>, <span class="ident">flags</span>) <span class="op">=</span> <span class="ident">Alu</span>::<span class="ident">calculate</span>(<span class="ident">inst</span>.<span class="ident">get_alu_instruction</span>(), <span class="ident">a</span>, <span class="ident">b</span>,
+            <span class="self">self</span>.<span class="ident">flag_register</span>.<span class="ident">carry</span>());
 
-        <span class='comment'>// Write result to registers</span>
-        <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>should_write_register</span>() {
-            <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>should_write_register_b</span>() {
-                <span class='self'>self</span>.<span class='ident'>registers</span>[<span class='ident'>inst</span>.<span class='ident'>get_register_address_b</span>()] <span class='op'>=</span> <span class='ident'>result</span>;
-            } <span class='kw'>else</span> {
-                <span class='self'>self</span>.<span class='ident'>registers</span>[<span class='ident'>inst</span>.<span class='ident'>get_register_address_a</span>()] <span class='op'>=</span> <span class='ident'>result</span>;
+        <span class="comment">// Write result to registers</span>
+        <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">should_write_register</span>() {
+            <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">should_write_register_b</span>() {
+                <span class="self">self</span>.<span class="ident">registers</span>[<span class="ident">inst</span>.<span class="ident">get_register_address_b</span>()] <span class="op">=</span> <span class="ident">result</span>;
+            } <span class="kw">else</span> {
+                <span class="self">self</span>.<span class="ident">registers</span>[<span class="ident">inst</span>.<span class="ident">get_register_address_a</span>()] <span class="op">=</span> <span class="ident">result</span>;
             }
         }
 
-        <span class='comment'>// Write results to the bus</span>
-        <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>is_bus_enabled</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>inst</span>.<span class='ident'>is_bus_writable</span>() {
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>bus</span>.<span class='ident'>write</span>(<span class='self'>self</span>.<span class='ident'>registers</span>[<span class='ident'>inst</span>.<span class='ident'>get_register_address_a</span>()], <span class='ident'>result</span>));
+        <span class="comment">// Write results to the bus</span>
+        <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">is_bus_enabled</span>() <span class="op">&amp;&amp;</span> <span class="ident">inst</span>.<span class="ident">is_bus_writable</span>() {
+            <span class="ident">bus</span>.<span class="ident">write</span>(<span class="self">self</span>.<span class="ident">registers</span>[<span class="ident">inst</span>.<span class="ident">get_register_address_a</span>()], <span class="ident">result</span>)<span class="question-mark">?</span>;
         }
 
-        <span class='comment'>// Store flags in the flag register</span>
-        <span class='kw'>if</span> <span class='ident'>inst</span>.<span class='ident'>should_store_flags</span>() {
-            <span class='self'>self</span>.<span class='ident'>flag_register</span> <span class='op'>=</span> <span class='ident'>flags</span>;
+        <span class="comment">// Calculate and return the next instruction address</span>
+        <span class="kw">let</span> <span class="ident">next_address</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">calculate_next_instruction_address</span>(<span class="ident">inst</span>, <span class="ident">flags</span>);
+
+        <span class="comment">// Store flags in the flag register</span>
+        <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">should_store_flags</span>() {
+            <span class="self">self</span>.<span class="ident">flag_register</span> <span class="op">=</span> <span class="ident">flags</span>;
         }
 
-        <span class='comment'>// Calculate and return the next instruction address</span>
-        <span class='prelude-val'>Ok</span>((<span class='ident'>Cpu</span>::<span class='ident'>calculate_next_instruction_address</span>(<span class='ident'>inst</span>, <span class='ident'>flags</span>, <span class='self'>self</span>.<span class='ident'>flag_register</span>.<span class='ident'>carry</span>()) <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>flags</span>))
+        <span class="comment">// Reset interrupts (stored only if MAC = 111)</span>
+        <span class="self">self</span>.<span class="ident">volatile_interrupt</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">get_address_control</span>() <span class="op">==</span> <span class="number">0b11</span> <span class="op">&amp;&amp;</span>
+           <span class="ident">inst</span>.<span class="ident">get_next_instruction_address</span>() <span class="op">&amp;</span> <span class="number">0b00001</span> <span class="op">==</span> <span class="number">0b1</span> {
+            <span class="self">self</span>.<span class="ident">stored_interrupt</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        }
+
+        <span class="prelude-val">Ok</span>((<span class="ident">next_address</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">flags</span>))
     }
 
-    <span class='doccomment'>/// Direct access to the registers.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>inspect_registers</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>; <span class='number'>8</span>] {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>registers</span>
+    <span class="doccomment">/// Enable the volatile interrupt (MAC 010) for the next instruction executed</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trigger_volatile_interrupt</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">volatile_interrupt</span> <span class="op">=</span> <span class="bool-val">true</span>;
     }
 
-    <span class='doccomment'>/// Direct access to the flag register.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>inspect_flags</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Flags</span> {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>flag_register</span>
+    <span class="doccomment">/// Enable the stored interrupt (MAC 111) until used by any instruction</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trigger_stored_interrupt</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>){
+        <span class="self">self</span>.<span class="ident">stored_interrupt</span> <span class="op">=</span> <span class="bool-val">true</span>;
     }
 
-    <span class='doccomment'>/// Calculate the next instruction address based on the current instruction</span>
-    <span class='doccomment'>/// and the flags.</span>
-    <span class='kw'>fn</span> <span class='ident'>calculate_next_instruction_address</span>(<span class='ident'>inst</span>: <span class='ident'>Instruction</span>, <span class='ident'>flags</span>: <span class='ident'>Flags</span>,
-        <span class='ident'>stored_carry</span>: <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='ident'>u8</span> {
-        <span class='kw'>let</span> <span class='ident'>next_address</span> <span class='op'>=</span> <span class='ident'>inst</span>.<span class='ident'>get_next_instruction_address</span>();
-        <span class='kw'>let</span> <span class='ident'>next_address_base</span> <span class='op'>=</span> <span class='ident'>next_address</span> <span class='kw-2'>&amp;</span> <span class='number'>0b11110</span>; <span class='comment'>// Mask off last bit</span>
+    <span class="doccomment">/// Direct access to the registers.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inspect_registers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>; <span class="number">8</span>] {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">registers</span>
+    }
 
-        <span class='kw'>match</span> <span class='ident'>inst</span>.<span class='ident'>get_address_control</span>() <span class='op'>&lt;&lt;</span> <span class='number'>1</span> <span class='op'>|</span> (<span class='ident'>next_address</span> <span class='kw-2'>&amp;</span> <span class='number'>0b00001</span>) {
-            <span class='number'>0b000</span> <span class='op'>|</span> <span class='number'>0b001</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address</span>
+    <span class="doccomment">/// Direct access to the flag register.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inspect_flags</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Flags</span> {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">flag_register</span>
+    }
+
+    <span class="doccomment">/// Check if the volatile interrupt is active for the next instruction</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_volatile_interrupt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">volatile_interrupt</span>
+    }
+
+    <span class="doccomment">/// Check if the stored interrupt is active</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_stored_interrupt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">stored_interrupt</span>
+    }
+
+    <span class="doccomment">/// Calculate the next instruction address based on the current instruction</span>
+    <span class="doccomment">/// and the flags.</span>
+    <span class="kw">fn</span> <span class="ident">calculate_next_instruction_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">inst</span>: <span class="ident">Instruction</span>, <span class="ident">flags</span>: <span class="ident">Flags</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+        <span class="kw">let</span> <span class="ident">next_address</span> <span class="op">=</span> <span class="ident">inst</span>.<span class="ident">get_next_instruction_address</span>();
+        <span class="kw">let</span> <span class="ident">next_address_base</span> <span class="op">=</span> <span class="ident">next_address</span> <span class="op">&amp;</span> <span class="number">0b11110</span>; <span class="comment">// Mask off last bit</span>
+
+        <span class="kw">match</span> <span class="ident">inst</span>.<span class="ident">get_full_address_control</span>() {
+            <span class="number">0b000</span> <span class="op">|</span> <span class="number">0b001</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address</span>
             }
-            <span class='number'>0b010</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address_base</span> <span class='op'>|</span> <span class='number'>0b00001</span>
+            <span class="number">0b010</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address_base</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">volatile_interrupt</span> <span class="kw">as</span> <span class="ident">u8</span>
             }
-            <span class='number'>0b011</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address_base</span> <span class='op'>|</span> <span class='ident'>stored_carry</span> <span class='kw'>as</span> <span class='ident'>u8</span>
+            <span class="number">0b011</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address_base</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">flag_register</span>.<span class="ident">carry</span>() <span class="kw">as</span> <span class="ident">u8</span>
             }
-            <span class='number'>0b100</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address_base</span> <span class='op'>|</span> <span class='ident'>flags</span>.<span class='ident'>carry</span>() <span class='kw'>as</span> <span class='ident'>u8</span>
+            <span class="number">0b100</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address_base</span> <span class="op">|</span> <span class="ident">flags</span>.<span class="ident">carry</span>() <span class="kw">as</span> <span class="ident">u8</span>
             }
-            <span class='number'>0b101</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address_base</span> <span class='op'>|</span> <span class='ident'>flags</span>.<span class='ident'>zero</span>() <span class='kw'>as</span> <span class='ident'>u8</span>
+            <span class="number">0b101</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address_base</span> <span class="op">|</span> <span class="ident">flags</span>.<span class="ident">zero</span>() <span class="kw">as</span> <span class="ident">u8</span>
             }
-            <span class='number'>0b110</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address_base</span> <span class='op'>|</span> <span class='ident'>flags</span>.<span class='ident'>negative</span>() <span class='kw'>as</span> <span class='ident'>u8</span>
+            <span class="number">0b110</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address_base</span> <span class="op">|</span> <span class="ident">flags</span>.<span class="ident">negative</span>() <span class="kw">as</span> <span class="ident">u8</span>
             }
-            <span class='number'>0b111</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>next_address_base</span>
+            <span class="number">0b111</span> <span class="op">=&gt;</span> {
+                <span class="ident">next_address_base</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">stored_interrupt</span> <span class="kw">as</span> <span class="ident">u8</span>
             }
-            _ <span class='op'>=&gt;</span> {
-                <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;Invalid address control&quot;</span>)
+            <span class="kw">_</span> <span class="op">=&gt;</span> {
+                <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Invalid address control&quot;</span>)
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>tests</span> {
-    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
-    <span class='kw'>use</span> <span class='ident'>alu</span>::<span class='ident'>Flags</span>;
-    <span class='kw'>use</span> <span class='ident'>bus</span>::<span class='ident'>IoRegisters</span>;
-    <span class='kw'>use</span> <span class='ident'>instruction</span>::<span class='ident'>Instruction</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">alu</span>::<span class="ident">Flags</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bus</span>::<span class="ident">IoRegisters</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">instruction</span>::<span class="ident">Instruction</span>;
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>address_calculation</span>() {
-        <span class='comment'>// Helper function to keep asserts short</span>
-        <span class='kw'>let</span> <span class='ident'>na</span> <span class='op'>=</span> <span class='op'>|</span><span class='ident'>inst</span>: <span class='ident'>u32</span>, <span class='ident'>flag_register</span>, <span class='ident'>carry</span><span class='op'>|</span> {
-            <span class='kw'>let</span> <span class='ident'>inst</span> <span class='op'>=</span> <span class='ident'>Instruction</span>::<span class='ident'>new</span>(<span class='ident'>inst</span> <span class='op'>&lt;&lt;</span> <span class='number'>18</span>).<span class='ident'>unwrap</span>();
-            <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>Cpu</span>::<span class='ident'>calculate_next_instruction_address</span>(<span class='ident'>inst</span>, <span class='ident'>flag_register</span>, <span class='ident'>carry</span>);
-            <span class='ident'>result</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">address_calculation</span>() {
+        <span class="comment">// Helper function to keep asserts short</span>
+        <span class="kw">let</span> <span class="ident">na</span> <span class="op">=</span> <span class="op">|</span><span class="ident">inst</span>: <span class="ident">u32</span>, <span class="ident">flags</span>, <span class="ident">carry</span>, <span class="ident">volatile_int</span>, <span class="ident">stored_int</span><span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">inst</span> <span class="op">=</span> <span class="ident">Instruction</span>::<span class="ident">new</span>(<span class="ident">inst</span> <span class="op">&lt;&lt;</span> <span class="number">18</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cpu</span> <span class="op">=</span> <span class="ident">Cpu</span>::<span class="ident">default</span>();
+            <span class="ident">cpu</span>.<span class="ident">volatile_interrupt</span> <span class="op">=</span> <span class="ident">volatile_int</span>;
+            <span class="ident">cpu</span>.<span class="ident">stored_interrupt</span> <span class="op">=</span> <span class="ident">stored_int</span>;
+            <span class="ident">cpu</span>.<span class="ident">flag_register</span> <span class="op">=</span> <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="ident">carry</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>);
+            <span class="ident">cpu</span>.<span class="ident">calculate_next_instruction_address</span>(<span class="ident">inst</span>, <span class="ident">flags</span>)
         };
 
-        <span class='comment'>// No modification</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b00_00000</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b00000</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b00_11100</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11100</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b00_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11111</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b00_00000</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>( <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>),  <span class='bool-val'>true</span>), <span class='number'>0b00000</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b00_11100</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>( <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>),  <span class='bool-val'>true</span>), <span class='number'>0b11100</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b00_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>( <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>),  <span class='bool-val'>true</span>), <span class='number'>0b11111</span>);
+        <span class="comment">// No modification</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b00_00000</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b00000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b00_11100</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11100</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b00_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b00_00000</span>, <span class="ident">Flags</span>::<span class="ident">new</span>( <span class="bool-val">true</span>,  <span class="bool-val">true</span>,  <span class="bool-val">true</span>),  <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b00000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b00_11100</span>, <span class="ident">Flags</span>::<span class="ident">new</span>( <span class="bool-val">true</span>,  <span class="bool-val">true</span>,  <span class="bool-val">true</span>),  <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11100</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b00_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>( <span class="bool-val">true</span>,  <span class="bool-val">true</span>,  <span class="bool-val">true</span>),  <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
 
-        <span class='comment'>// Set last bit to 1</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b01_11110</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11111</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b01_11110</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>( <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>,  <span class='bool-val'>true</span>),  <span class='bool-val'>true</span>), <span class='number'>0b11111</span>);
+        <span class="comment">// Set last bit to the volatile interrupt</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b01_11110</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11110</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b01_11110</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
 
-        <span class='comment'>// Set last bit to stored carry</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b01_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11110</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b01_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>),  <span class='bool-val'>true</span>), <span class='number'>0b11111</span>);
+        <span class="comment">// Set last bit to stored carry</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b01_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11110</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b01_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>),  <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
 
-        <span class='comment'>// Set last bit to carry out</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b10_11110</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11110</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b10_11110</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>( <span class='bool-val'>true</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11111</span>);
+        <span class="comment">// Set last bit to carry out</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b10_11110</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11110</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b10_11110</span>, <span class="ident">Flags</span>::<span class="ident">new</span>( <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
 
-        <span class='comment'>// Set last bit to zero out</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b10_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11110</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b10_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>,  <span class='bool-val'>true</span>), <span class='bool-val'>false</span>), <span class='number'>0b11111</span>);
+        <span class="comment">// Set last bit to zero out</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b10_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11110</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b10_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>,  <span class="bool-val">true</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
 
-        <span class='comment'>// Set last bit to negative out</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b11_11110</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11110</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b11_11110</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>,  <span class='bool-val'>true</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11111</span>);
+        <span class="comment">// Set last bit to negative out</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b11_11110</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11110</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b11_11110</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>,  <span class="bool-val">true</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11111</span>);
 
-        <span class='comment'>// Set last bit to 0</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b11_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>, <span class='bool-val'>false</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11110</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>na</span>(<span class='number'>0b11_11111</span>, <span class='ident'>Flags</span>::<span class='ident'>new</span>(<span class='bool-val'>false</span>,  <span class='bool-val'>true</span>, <span class='bool-val'>false</span>), <span class='bool-val'>false</span>), <span class='number'>0b11110</span>);
+        <span class="comment">// Set last bit to the stored interrupt</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b11_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="number">0b11110</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">na</span>(<span class="number">0b11_11111</span>, <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>,  <span class="bool-val">true</span>), <span class="number">0b11111</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>multiplication</span>() {
-        <span class='kw'>let</span> <span class='ident'>program</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> [
-            <span class='number'>0b00_00001_00_000_1100_01_01_0001_0</span>, <span class='comment'>// in:  R0 = FC</span>
-            <span class='number'>0b00_00010_01_000_0000_01_10_0000_0</span>, <span class='comment'>//      R0 = (R0)</span>
-            <span class='number'>0b00_00011_00_001_1101_01_01_0001_0</span>, <span class='comment'>//      R1 = FD</span>
-            <span class='number'>0b00_00100_01_001_0000_01_10_0000_0</span>, <span class='comment'>//      R1 = (R1)</span>
-            <span class='number'>0b00_00101_00_010_0000_01_00_0011_0</span>, <span class='comment'>//      R2 = 0</span>
-            <span class='number'>0b10_00111_00_000_0000_00_00_0000_0</span>, <span class='comment'>// tst: TEST R0, ZO</span>
-            <span class='number'>0b00_01000_00_000_1111_01_01_0100_0</span>, <span class='comment'>//        R0 = R0 + FF, JP add</span>
-            <span class='number'>0b00_01001_00_001_1110_01_01_0001_0</span>, <span class='comment'>//        R1 = FF, JP out</span>
-            <span class='number'>0b00_00101_00_010_0001_01_00_0100_0</span>, <span class='comment'>// add: R2 = R2 + R1, JP tst</span>
-            <span class='number'>0b00_00000_11_001_0010_00_00_0001_0</span>, <span class='comment'>// out: (R1) = R2, JP in</span>
-        ].<span class='ident'>iter</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>i</span><span class='op'>|</span> <span class='ident'>Instruction</span>::<span class='ident'>new</span>(<span class='ident'>i</span>).<span class='ident'>unwrap</span>()).<span class='ident'>collect</span>();
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">multiplication</span>() {
+        <span class="kw">let</span> <span class="ident">program</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> [
+            <span class="number">0b00_00001_00_000_1100_01_01_1100_0</span>, <span class="comment">// in:  R0 = FC</span>
+            <span class="number">0b00_00010_01_000_0000_01_10_0001_0</span>, <span class="comment">//      R0 = (R0)</span>
+            <span class="number">0b00_00011_00_001_1101_01_01_1100_0</span>, <span class="comment">//      R1 = FD</span>
+            <span class="number">0b00_00100_01_001_0000_01_10_0001_0</span>, <span class="comment">//      R1 = (R1)</span>
+            <span class="number">0b00_00101_00_010_0000_01_00_0011_0</span>, <span class="comment">//      R2 = 0</span>
+            <span class="number">0b10_00111_00_000_0000_00_00_0001_0</span>, <span class="comment">// tst: TEST R0, ZO</span>
+            <span class="number">0b00_01000_00_000_1111_01_01_0100_0</span>, <span class="comment">//        R0 = R0 + FF, JP add</span>
+            <span class="number">0b00_01001_00_001_1110_01_01_1100_0</span>, <span class="comment">//        R1 = FF, JP out</span>
+            <span class="number">0b00_00101_00_010_0001_01_00_0100_0</span>, <span class="comment">// add: R2 = R2 + R1, JP tst</span>
+            <span class="number">0b00_00000_11_001_0010_00_00_1100_0</span>, <span class="comment">// out: (R1) = R2, JP in</span>
+        ].<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">i</span><span class="op">|</span> <span class="ident">Instruction</span>::<span class="ident">new</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>()).<span class="ident">collect</span>();
 
-        <span class='kw'>let</span> <span class='ident'>mult</span> <span class='op'>=</span> <span class='op'>|</span><span class='ident'>a</span>, <span class='ident'>b</span>, <span class='ident'>steps</span><span class='op'>|</span> <span class='op'>-&gt;</span> <span class='ident'>u8</span> {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>next_instruction_address</span> <span class='op'>=</span> <span class='number'>0</span>;
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cpu</span> <span class='op'>=</span> <span class='ident'>Cpu</span>::<span class='ident'>new</span>();
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bus</span> <span class='op'>=</span> <span class='ident'>IoRegisters</span>::<span class='ident'>new</span>();
+        <span class="kw">let</span> <span class="ident">mult</span> <span class="op">=</span> <span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">steps</span><span class="op">|</span> <span class="op">-&gt;</span> <span class="ident">u8</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">next_instruction_address</span> <span class="op">=</span> <span class="number">0</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cpu</span> <span class="op">=</span> <span class="ident">Cpu</span>::<span class="ident">new</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bus</span> <span class="op">=</span> <span class="ident">IoRegisters</span>::<span class="ident">new</span>();
 
-            <span class='ident'>bus</span>.<span class='ident'>inspect_input</span>().<span class='ident'>borrow_mut</span>()[<span class='number'>0</span>..<span class='number'>2</span>].<span class='ident'>clone_from_slice</span>(<span class='kw-2'>&amp;</span>[<span class='ident'>a</span>, <span class='ident'>b</span>]);
+            <span class="ident">bus</span>.<span class="ident">inspect_input</span>().<span class="ident">borrow_mut</span>()[<span class="number">0</span>..<span class="number">2</span>].<span class="ident">clone_from_slice</span>(<span class="kw-2">&amp;</span>[<span class="ident">a</span>, <span class="ident">b</span>]);
 
-            <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>steps</span> {
-                <span class='kw'>let</span> <span class='ident'>inst</span> <span class='op'>=</span> <span class='ident'>program</span>[<span class='ident'>next_instruction_address</span>];
-                <span class='ident'>next_instruction_address</span> <span class='op'>=</span> <span class='ident'>cpu</span>.<span class='ident'>execute_instruction</span>(<span class='ident'>inst</span>,
-                    <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>bus</span>).<span class='ident'>unwrap</span>().<span class='number'>0</span>;
+            <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">steps</span> {
+                <span class="kw">let</span> <span class="ident">inst</span> <span class="op">=</span> <span class="ident">program</span>[<span class="ident">next_instruction_address</span>];
+                <span class="ident">next_instruction_address</span> <span class="op">=</span> <span class="ident">cpu</span>.<span class="ident">execute_instruction</span>(<span class="ident">inst</span>,
+                    <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bus</span>).<span class="ident">unwrap</span>().<span class="number">0</span>;
             }
 
-            <span class='comment'>// The return is necessary because of the following issue:</span>
-            <span class='comment'>// https://github.com/rust-lang/rust/issues/31439</span>
-            <span class='kw'>return</span> <span class='ident'>bus</span>.<span class='ident'>inspect_output</span>().<span class='ident'>borrow</span>()[<span class='number'>0</span>];
+            <span class="comment">// The return is necessary because of the following issue:</span>
+            <span class="comment">// https://github.com/rust-lang/rust/issues/31439</span>
+            <span class="kw">return</span> <span class="ident">bus</span>.<span class="ident">inspect_output</span>().<span class="ident">borrow</span>()[<span class="number">0</span>];
         };
 
-        <span class='comment'>// Special cases</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>0</span>, <span class='number'>0</span>, <span class='number'>8</span>), <span class='number'>0</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>1</span>, <span class='number'>0</span>, <span class='number'>11</span>), <span class='number'>0</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>0</span>, <span class='number'>1</span>, <span class='number'>8</span>), <span class='number'>0</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>1</span>, <span class='number'>1</span>, <span class='number'>11</span>), <span class='number'>1</span>);
+        <span class="comment">// Special cases</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">8</span>), <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">11</span>), <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">8</span>), <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="number">11</span>), <span class="number">1</span>);
 
-        <span class='comment'>// Non-overflowing calculations</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>3</span>, <span class='number'>7</span>, <span class='number'>17</span>), <span class='number'>21</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>7</span>, <span class='number'>3</span>, <span class='number'>29</span>), <span class='number'>21</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>22</span>, <span class='number'>11</span>, <span class='number'>74</span>), <span class='number'>242</span>);
+        <span class="comment">// Non-overflowing calculations</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">3</span>, <span class="number">7</span>, <span class="number">17</span>), <span class="number">21</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">7</span>, <span class="number">3</span>, <span class="number">29</span>), <span class="number">21</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">22</span>, <span class="number">11</span>, <span class="number">74</span>), <span class="number">242</span>);
 
-        <span class='comment'>// Overflowing calculations</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>22</span>, <span class='number'>12</span>, <span class='number'>74</span>), <span class='number'>8</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>128</span>, <span class='number'>64</span>, <span class='number'>392</span>), <span class='number'>0</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mult</span>(<span class='number'>142</span>, <span class='number'>142</span>, <span class='number'>434</span>), <span class='number'>196</span>);
+        <span class="comment">// Overflowing calculations</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">22</span>, <span class="number">12</span>, <span class="number">74</span>), <span class="number">8</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">128</span>, <span class="number">64</span>, <span class="number">392</span>), <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mult</span>(<span class="number">142</span>, <span class="number">142</span>, <span class="number">434</span>), <span class="number">196</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">update_flag_register_after_address_calculation</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cpu</span> <span class="op">=</span> <span class="ident">Cpu</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bus</span> <span class="op">=</span> <span class="ident">IoRegisters</span>::<span class="ident">new</span>();
+
+        <span class="comment">// NOP; JMP 0001{CF}</span>
+        <span class="kw">let</span> <span class="ident">inst</span> <span class="op">=</span> <span class="ident">Instruction</span>::<span class="ident">new</span>(<span class="number">0b01_00011_00_000_0000_00_0_0_0011_0</span>).<span class="ident">unwrap</span>();
+
+        <span class="ident">cpu</span>.<span class="ident">flag_register</span> <span class="op">=</span> <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">cpu</span>.<span class="ident">execute_instruction</span>(<span class="ident">inst</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bus</span>).<span class="ident">unwrap</span>().<span class="number">0</span>, <span class="number">0b00010</span>);
+        <span class="ident">cpu</span>.<span class="ident">flag_register</span> <span class="op">=</span> <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">cpu</span>.<span class="ident">execute_instruction</span>(<span class="ident">inst</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bus</span>).<span class="ident">unwrap</span>().<span class="number">0</span>, <span class="number">0b00011</span>);
+
+        <span class="comment">// TEST R0 + 0xFF + 1 (ADDS); JMP 0011{CF}; CHFL</span>
+        <span class="kw">let</span> <span class="ident">inst</span> <span class="op">=</span> <span class="ident">Instruction</span>::<span class="ident">new</span>(<span class="number">0b01_00111_00_000_1111_00_0_1_0101_1</span>).<span class="ident">unwrap</span>();
+
+        <span class="ident">cpu</span>.<span class="ident">flag_register</span> <span class="op">=</span> <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">cpu</span>.<span class="ident">execute_instruction</span>(<span class="ident">inst</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bus</span>).<span class="ident">unwrap</span>().<span class="number">0</span>, <span class="number">0b00110</span>);
+        <span class="ident">cpu</span>.<span class="ident">flag_register</span> <span class="op">=</span> <span class="ident">Flags</span>::<span class="ident">new</span>(<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">cpu</span>.<span class="ident">execute_instruction</span>(<span class="ident">inst</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bus</span>).<span class="ident">unwrap</span>().<span class="number">0</span>, <span class="number">0b00111</span>);
     }
 }
-</pre>
-</section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt>?</dt>
-                    <dd>Show this help dialog</dd>
-                    <dt>S</dt>
-                    <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
-                    <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
-                    <dd>Move down in search results</dd>
-                    <dt>&#9166;</dt>
-                    <dd>Go to active search result</dd>
-                    <dt>+</dt>
-                    <dd>Collapse/expand all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../";
-        window.currentCrate = "emulator";
-    </script>
-    <script src="../../jquery.js"></script>
-    <script src="../../main.js"></script>
-    <script defer src="../../search-index.js"></script>
-</body>
-</html>
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "emulator";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

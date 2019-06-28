@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["read_program","Parse 2i programs in string representation into arrays of `Instruction`s."]]});
+initSidebarItems({"fn":[["read_program","Parse 2i programs in string representation into arrays of `Instruction`s."],["read_reachable_program","Parse 2i programs in string representation and return only the reachable instructions."]]});
