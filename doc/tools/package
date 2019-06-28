@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -e
+
+declare -A targets
+targets[linux-i686.txz]=i686-unknown-linux-musl
+targets[linux-x86_64.txz]=x86_64-unknown-linux-musl
+targets[win-x86_64.zip]=x86_64-pc-windows-gnu
+
+target_dir="$PWD/releases"
+version="$(grep -oPm1 'version = "\K[^"]*' Cargo.toml)"
+
+mkdir -p "$target_dir"
+
+for suffix in "${!targets[@]}"
+do
+  target="${targets[$suffix]}"
+  name="2i-emulator-$version-$suffix"
+
+  if [[ -f "$target_dir/$name" ]]; then
+    echo "$name already exists, skipping"
+    continue
+  fi
+
+  echo "$name"
+  cargo build --quiet --release --target "$target"
+
+  bin="target/$target/release/2i-emulator"
+  [[ -f $bin ]] || bin="target/$target/release/2i-emulator.exe"
+
+  strip -s "$bin"
+
+  tmpdir=$(mktemp -d)
+  cp "$bin" "$tmpdir"
+  cp "README.md" "$tmpdir"
+  cp "doc/examples/answer.2i" "$tmpdir"
+
+  if [[ ${suffix##*.} == zip ]]; then
+    (cd "$tmpdir"; zip -q -9 "$target_dir/$name" *)
+  elif [[ ${suffix##*.} == txz ]]; then
+    (cd "$tmpdir"; tar caf "$target_dir/$name" *)
+  fi
+
+  rm -r "$tmpdir"
+done
