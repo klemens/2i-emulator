@@ -5,6 +5,9 @@ authors = ["Klemens Schölhorn <klemens@schoelhorn.eu>"]
 license = "GPL-3.0-or-later"
 edition = "2018"
 
+[profile.release]
+lto = true
+
 [lib]
 name = "emulator"
 path = "src/emulator/lib.rs"
