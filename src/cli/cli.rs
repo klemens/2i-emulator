@@ -4,7 +4,7 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 pub fn build() -> App<'static, 'static> {
     App::new("2i-emulator")
-        .version(crate_version!())
+        .version(clap::crate_version!())
         .setting(AppSettings::ArgsNegateSubcommands)
         .setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::VersionlessSubcommands)
@@ -35,7 +35,7 @@ pub fn build() -> App<'static, 'static> {
                 .multiple(true)))
 }
 
-pub fn gen_completions(args: &ArgMatches) -> Result<(), i32> {
+pub fn gen_completions(args: &ArgMatches<'_>) -> Result<(), i32> {
     let shell = args.value_of("shell").unwrap().parse().map_err(|_| {
         println!("Unbekannte Shell: {}", args.value_of("shell").unwrap());
         2

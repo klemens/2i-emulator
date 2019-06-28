@@ -51,7 +51,7 @@ impl Cpu {
                 return Err(Error::Cpu("Cannot read from bus while it is in write mode"));
             }
 
-            try!(bus.read(self.registers[inst.get_register_address_a()]))
+            bus.read(self.registers[inst.get_register_address_a()])?
         } else {
             self.registers[inst.get_register_address_a()]
         };
@@ -78,7 +78,7 @@ impl Cpu {
 
         // Write results to the bus
         if inst.is_bus_enabled() && inst.is_bus_writable() {
-            try!(bus.write(self.registers[inst.get_register_address_a()], result));
+            bus.write(self.registers[inst.get_register_address_a()], result)?;
         }
 
         // Calculate and return the next instruction address
@@ -167,9 +167,9 @@ impl Cpu {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alu::Flags;
-    use bus::IoRegisters;
-    use instruction::Instruction;
+    use crate::alu::Flags;
+    use crate::bus::IoRegisters;
+    use crate::instruction::Instruction;
 
     #[test]
     fn address_calculation() {

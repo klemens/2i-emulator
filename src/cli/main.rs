@@ -1,11 +1,3 @@
-extern crate chrono;
-#[macro_use]
-extern crate clap;
-extern crate cmdline_parser;
-extern crate emulator;
-extern crate regex;
-extern crate rustyline;
-
 mod cli;
 mod ipg;
 mod latex;

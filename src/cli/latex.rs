@@ -8,7 +8,7 @@ use emulator::parse::read_reachable_program;
 
 static TEMPLATE: &'static str = include_str!("latex.tex");
 
-pub fn main(args: &ArgMatches) -> Result<(), i32> {
+pub fn main(args: &ArgMatches<'_>) -> Result<(), i32> {
     // Load programs eagerly and remember their paths
     let programs = args.values_of("2i-programm").unwrap().map(|arg| {
         let program_path = Path::new(arg);

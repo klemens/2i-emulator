@@ -170,7 +170,7 @@ fn parse_instructions<R: Read>(reader: R) -> Result<[Option<Instruction>; 32]> {
 
         // Parse Instruction
         let raw_inst = convert_binary_string_to_int(&instruction);
-        let instruction = try!(Instruction::new(raw_inst));
+        let instruction = Instruction::new(raw_inst)?;
 
         min_address = if let Some(address) = address {
             // Parse specified address

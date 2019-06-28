@@ -5,7 +5,7 @@ use chrono::prelude::Local;
 use clap::ArgMatches;
 use emulator::parse::read_reachable_program;
 
-pub fn main(args: &ArgMatches) -> Result<(), i32> {
+pub fn main(args: &ArgMatches<'_>) -> Result<(), i32> {
     // Load the program from the given path
     let program_path = Path::new(args.value_of("2i-programm").unwrap());
     let program_file = File::open(program_path).map_err(|e| {

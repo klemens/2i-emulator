@@ -6,7 +6,7 @@ use emulator::{Flags, Instruction, IoRegisters, Ram};
 use super::*;
 
 /// Display the status UI of the cli
-pub fn status(computer: &mut Computer, io: &IoRegisters,
+pub fn status(computer: &mut Computer<'_>, io: &IoRegisters,
               program: &Option<Program>, flags: Option<Flags>) {
     let flag_register = computer.cpu.inspect_flags().clone();
     let volatile_interrupt = computer.cpu.check_volatile_interrupt();
@@ -58,7 +58,7 @@ Register:        Eingaberegister:   Aktuelles Mikroprogramm:
 }
 
 /// Ellipsize path if necessary
-fn ellipsize_path(path: &Path, max_length: usize) -> Cow<str> {
+fn ellipsize_path(path: &Path, max_length: usize) -> Cow<'_, str> {
     assert!(max_length >= 4);
 
     let path_string = path.to_string_lossy();
@@ -89,7 +89,7 @@ fn format_instruction(inst: Instruction) -> String {
 }
 
 /// Print a overview of the ram in common hex-editor format
-pub fn display_ram(ram: &Ram) {
+pub fn display_ram(ram: &Ram<'_>) {
     println!("\n    _0 _1 _2 _3 _4 _5 _6 _7 _8 _9 _A _B _C _D _E _F");
 
     for (i, cell) in ram.inspect().borrow()[0..252].iter().enumerate() {

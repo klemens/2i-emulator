@@ -19,7 +19,7 @@ pub trait Bus {
 /// Represents the 8 bit ram of the 2i.
 pub struct Ram<'a> {
     memory: RefCell<[u8; 256]>,
-    overlays: Vec<(u8, u8, &'a Bus)>,
+    overlays: Vec<(u8, u8, &'a dyn Bus)>,
 }
 
 impl<'a> Ram<'a> {
@@ -39,7 +39,7 @@ impl<'a> Ram<'a> {
     /// is forwarded to the given bus. All overlays are checked in the order
     /// they were added.
     pub fn add_overlay(&mut self, first_address: u8, last_address: u8,
-        overlay_bus: &'a Bus) {
+        overlay_bus: &'a dyn Bus) {
         self.overlays.push((first_address, last_address, overlay_bus));
     }
 }

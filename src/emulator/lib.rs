@@ -4,8 +4,6 @@
 //! programmed using microcode and is used in the computer science hardware
 //! course at Leipzig University.
 
-extern crate regex;
-
 use std::fmt;
 use std::io;
 use std::result;
@@ -17,10 +15,10 @@ pub mod instruction;
 pub mod parse;
 
 // Re-exports
-pub use alu::Flags;
-pub use cpu::Cpu;
-pub use instruction::Instruction;
-pub use bus::{Bus, IoRegisters, Ram};
+pub use crate::alu::Flags;
+pub use crate::cpu::Cpu;
+pub use crate::instruction::Instruction;
+pub use crate::bus::{Bus, IoRegisters, Ram};
 
 #[derive(Debug)]
 pub enum Error {
@@ -32,7 +30,7 @@ pub enum Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             &Error::Bus(s) => write!(f, "Bus error: {}", s),
             &Error::Cpu(s) => write!(f, "Cpu error: {}", s),
