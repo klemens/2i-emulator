@@ -81,13 +81,13 @@ impl Cpu {
             try!(bus.write(self.registers[inst.get_register_address_a()], result));
         }
 
+        // Calculate and return the next instruction address
+        let next_address = self.calculate_next_instruction_address(inst, flags);
+
         // Store flags in the flag register
         if inst.should_store_flags() {
             self.flag_register = flags;
         }
-
-        // Calculate and return the next instruction address
-        let next_address = self.calculate_next_instruction_address(inst, flags);
 
         // Reset interrupts (stored only if MAC = 111)
         self.volatile_interrupt = false;
@@ -264,5 +264,27 @@ mod tests {
         assert_eq!(mult(22, 12, 74), 8);
         assert_eq!(mult(128, 64, 392), 0);
         assert_eq!(mult(142, 142, 434), 196);
+    }
+
+    #[test]
+    fn update_flag_register_after_address_calculation() {
+        let mut cpu = Cpu::new();
+        let mut bus = IoRegisters::new();
+
+        // NOP; JMP 0001{CF}
+        let inst = Instruction::new(0b01_00011_00_000_0000_00_0_0_0011_0).unwrap();
+
+        cpu.flag_register = Flags::new(false, false, false);
+        assert_eq!(cpu.execute_instruction(inst, &mut bus).unwrap().0, 0b00010);
+        cpu.flag_register = Flags::new(true, false, false);
+        assert_eq!(cpu.execute_instruction(inst, &mut bus).unwrap().0, 0b00011);
+
+        // TEST R0 + 0xFF + 1 (ADDS); JMP 0011{CF}; CHFL
+        let inst = Instruction::new(0b01_00111_00_000_1111_00_0_1_0101_1).unwrap();
+
+        cpu.flag_register = Flags::new(false, false, false);
+        assert_eq!(cpu.execute_instruction(inst, &mut bus).unwrap().0, 0b00110);
+        cpu.flag_register = Flags::new(true, false, false);
+        assert_eq!(cpu.execute_instruction(inst, &mut bus).unwrap().0, 0b00111);
     }
 }
