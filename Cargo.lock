@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "2i-emulator"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "chrono 0.4.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
