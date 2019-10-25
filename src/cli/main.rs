@@ -54,7 +54,7 @@ fn _main() -> Result<(), i32> {
 
         // Add all non-empty inputs to the history
         if ! line.is_empty() {
-            line_reader.add_history_entry(line.as_ref());
+            line_reader.add_history_entry(line);
         }
 
         if line.is_empty() {

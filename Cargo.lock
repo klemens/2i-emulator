@@ -160,7 +160,7 @@ dependencies = [
 [[package]]
 name = "rustyline"
 version = "1.0.0"
-source = "git+https://github.com/klemens/rustyline.git?branch=2i-emulator#291927c2380226809dcd3a84acf7800d2e136620"
+source = "git+https://github.com/klemens/rustyline.git?branch=2i-emulator#2e74e40c9e9ad2ffbabc519d8e5af89c88a7c3e7"
 dependencies = [
  "cmdline-parser 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "encode_unicode 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
