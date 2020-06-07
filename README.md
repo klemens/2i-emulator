@@ -1,5 +1,7 @@
 # 2i-emulator
 
+![Continuous integration](https://github.com/klemens/2i-emulator/workflows/Continuous%20integration/badge.svg)
+
 Cli emulator for the micro computer 2i used in the computer science hardware
 course at Leipzig University.
 
