@@ -1,5 +1,5 @@
 [package]
-name = "2i-emulator"
+name = "emulator-2i"
 version = "2.0.2"
 authors = ["Klemens Schölhorn <klemens@schoelhorn.eu>"]
 license = "GPL-3.0-or-later"
