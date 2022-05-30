@@ -111,17 +111,23 @@ pub fn display_program(program: &Program) {
     println!();
 }
 
+pub fn clear_console() {
+    print!("\x1B[2J\x1B[1;1H");
+}
+
 /// Display a list of all commands with descriptions
 pub fn display_help() {
     println!("\n\
         FX = <value>  Eingaberegister setzen (zB: FC = 11010)\n\
         ENTER         Nächsten Befehl ausführen\n\
         load <path>   Neues Mikroprogramm laden (CPU wird zurückgesetzt)\n\
+        reload        Die zuletzt geladene Datei erneut laden\n\
         trigger <int> Interrupt auslösen:\
       \n                INTA (MAC 010): Nur für den nächsten Befehl gültig\
       \n                INTB (MAC 111): Gültig bis zum nächsten Befehl mit MAC = 111\n\
         ram           RAM-Übersicht anzeigen\n\
         program       Mikroprogramm anzeigen (ohne NOPs)\n\
         help          Hilfe anzeigen\n\
+        clear         Alle vorherigen Ausgaben löschen\n\
         exit/quit     Emulator beenden (alternativ: STRG-D)\n")
 }

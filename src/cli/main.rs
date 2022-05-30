@@ -35,6 +35,7 @@ fn _main() -> Result<(), i32> {
 
     let io = emulator::IoRegisters::new();
     let mut computer = Computer::new(&io);
+    let mut last_file = String::from("none");
 
     println!("2i-emulator {}, GPLv3, https://github.com/klemens/2i-emulator",
              option_env!("CARGO_PKG_VERSION").unwrap_or("*"));
@@ -73,10 +74,11 @@ fn _main() -> Result<(), i32> {
                 println!("Fehler: Kein Mikroprogramm geladen! (Laden per \"load prog.2i\")");
             }
         } else if line.starts_with("load ") {
-            let path = cmdline_parser::parse_single(&line[5..].trim());
+            let main_path = cmdline_parser::parse_single(&line[5..].trim());
 
-            if let Ok(prog) = load_programm(Path::new(&path)) {
+            if let Ok(prog) = load_programm(Path::new(&main_path)) {
                 program = Some(prog);
+                last_file = main_path;
                 // Reset computer (only keep io registers)
                 computer = Computer::new(&io);
                 ui::status(&mut computer, &io, &program, None);
@@ -93,8 +95,20 @@ fn _main() -> Result<(), i32> {
             ui::status(&mut computer, &io, &program, None);
         } else if line == "exit" || line == "quit" {
             break;
+        } else if line == "reload" {
+            if last_file.eq("none") {
+                println!("Es wurde noch keine Datei geladen");
+            } else if let Ok(prog) = load_programm(Path::new(&last_file))  {    
+                program = Some(prog);
+                // Reset computer (only keep io registers)
+                computer = Computer::new(&io);
+                ui::status(&mut computer, &io, &program, None);
+            }
         } else if line == "help" {
             ui::display_help();
+        }else if line == "clear" {
+            ui::clear_console();
+            ui::status(&mut computer, &io, &program, None);
         } else if line == "ram" {
             ui::display_ram(&computer.ram);
         } else if line == "program" {
@@ -190,6 +204,7 @@ impl rustyline::completion::Completer for Completer {
         let commands = [
             "exit",
             "load ",
+            "reload",
             "FC = ",
             "FD = ",
             "FE = ",
@@ -198,6 +213,7 @@ impl rustyline::completion::Completer for Completer {
             "trigger INTB",
             "help",
             "quit",
+            "clear",
             "ram",
             "program",
         ];
