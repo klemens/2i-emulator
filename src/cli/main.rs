@@ -125,7 +125,7 @@ fn _main() -> Result<(), i32> {
     Ok(())
 }
 
-/// Load 2i program from path and print errors to stdout if it failes
+/// Load 2i program from path and print errors to stdout if it fails
 fn load_programm(path: &Path) -> Result<Program, ()> {
     if let Ok(file) = File::open(&path) {
         match emulator::parse::read_program(file) {
