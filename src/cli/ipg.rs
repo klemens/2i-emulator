@@ -9,11 +9,11 @@ pub fn main(args: &ArgMatches<'_>) -> Result<(), i32> {
     // Load the program from the given path
     let program_path = Path::new(args.value_of("2i-programm").unwrap());
     let program_file = File::open(program_path).map_err(|e| {
-        println!("Die angegebene Datei konnte nicht geöffnet werden: {}", e);
+        eprintln!("Die angegebene Datei konnte nicht geöffnet werden: {}", e);
         2
     })?;
     let program = read_reachable_program(&program_file).map_err(|e| {
-        println!("Das Mikroprogramm konnte nicht geladen werden: {}", e);
+        eprintln!("Das Mikroprogramm konnte nicht geladen werden: {}", e);
         3
     })?;
 
