@@ -20,7 +20,7 @@ path = "src/cli/main.rs"
 rustyline = { git = "https://github.com/klemens/rustyline.git", branch = "2i-emulator"}
 chrono = "0.4"
 cmdline-parser = "0.1"
-regex = "1.1.7"
+regex = "1.5.5"
 
 [dependencies.clap]
 version = "^2"
